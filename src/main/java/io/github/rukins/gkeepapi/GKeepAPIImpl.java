@@ -1,6 +1,7 @@
 package io.github.rukins.gkeepapi;
 
 import io.github.rukins.gkeepapi.client.GKeepClientWrapper;
+import io.github.rukins.gkeepapi.exception.BadNodeTypeException;
 import io.github.rukins.gkeepapi.model.NodePair;
 import io.github.rukins.gkeepapi.model.node.Timestamps;
 import io.github.rukins.gkeepapi.model.node.NodeRequest;
@@ -60,12 +61,12 @@ public class GKeepAPIImpl implements GKeepAPI {
     }
 
     @Override
-    public NodePair getNodeById(String noteId) throws AuthError {
+    public NodePair getNodeById(String noteId) throws AuthError, BadNodeTypeException {
         return getNodeById(noteId, getAllNodes());
     }
 
     @Override
-    public NodePair getNodeById(String noteId, List<Node> allNodes) {
+    public NodePair getNodeById(String noteId, List<Node> allNodes) throws BadNodeTypeException {
         return new NodePair(
                 allNodes.stream()
                         .filter(n -> noteId.equals(n.getId()) || noteId.equals(n.getParentId()))
@@ -75,12 +76,12 @@ public class GKeepAPIImpl implements GKeepAPI {
     }
 
     @Override
-    public NodePair createNode(String title, String text) throws AuthError {
+    public NodePair createNode(String title, String text) throws AuthError, BadNodeTypeException {
         return createNode(title, text, "0");
     }
 
     @Override
-    public NodePair createNode(String title, String text, String sortValue) throws AuthError {
+    public NodePair createNode(String title, String text, String sortValue) throws AuthError, BadNodeTypeException {
         String noteId = IdUtils.generateId();
         LocalDateTime now = LocalDateTime.now();
 
@@ -116,7 +117,7 @@ public class GKeepAPIImpl implements GKeepAPI {
     }
 
     @Override
-    public NodePair createNode(Node note, Node listItem) throws AuthError {
+    public NodePair createNode(Node note, Node listItem) throws AuthError, BadNodeTypeException {
         NodeRequest nodeRequest = NodeRequest.withDefaultValues()
                 .nodes(List.of(note, listItem))
                 .build();
@@ -127,32 +128,32 @@ public class GKeepAPIImpl implements GKeepAPI {
     }
 
     @Override
-    public NodePair updateNode(String title, String text, String noteId) throws AuthError {
+    public NodePair updateNode(String title, String text, String noteId) throws AuthError, BadNodeTypeException {
         NodePair node = getNodeById(noteId);
 
         node.getNote().setTitle(title);
         node.getListItem().setText(text);
 
-        return updateNode(node.getNote(), node.getListItem());
+        return updateNode(node);
     }
 
     @Override
-    public NodePair updateNode(Node note, Node listItem) throws AuthError {
+    public NodePair updateNode(NodePair nodePair) throws AuthError, BadNodeTypeException {
         LocalDateTime now = LocalDateTime.now();
 
-        Timestamps noteTimestamps = note.getTimestamps();
+        Timestamps noteTimestamps = nodePair.getNote().getTimestamps();
         noteTimestamps.setUpdated(now);
         noteTimestamps.setUserEdited(now);
 
-        Timestamps listItemTimestamps = listItem.getTimestamps();
+        Timestamps listItemTimestamps = nodePair.getListItem().getTimestamps();
         listItemTimestamps.setUpdated(now);
         listItemTimestamps.setUserEdited(now);
 
-        note.setTimestamps(noteTimestamps);
-        listItem.setTimestamps(listItemTimestamps);
+        nodePair.getNote().setTimestamps(noteTimestamps);
+        nodePair.getListItem().setTimestamps(listItemTimestamps);
 
         NodeRequest nodeRequest = NodeRequest.withDefaultValues()
-                .nodes(List.of(note, listItem))
+                .nodes(List.of(nodePair.getNote(), nodePair.getListItem()))
                 .build();
 
         return new NodePair(
@@ -161,12 +162,14 @@ public class GKeepAPIImpl implements GKeepAPI {
     }
 
     @Override
-    public Node deleteNode(String noteId) throws AuthError {
+    public Node deleteNode(String noteId) throws AuthError, BadNodeTypeException {
         return deleteNode(getNodeById(noteId).getNote());
     }
 
     @Override
-    public Node deleteNode(Node note) throws AuthError {
+    public Node deleteNode(Node note) throws AuthError, BadNodeTypeException {
+        NodePair.checkIfNoteType(note);
+
         LocalDateTime now = LocalDateTime.now();
 
         Timestamps timestamps = note.getTimestamps();
@@ -284,12 +287,14 @@ public class GKeepAPIImpl implements GKeepAPI {
     }
 
     @Override
-    public Node addLabelToNote(String noteId, String labelId) throws AuthError {
+    public Node addLabelToNote(String noteId, String labelId) throws AuthError, BadNodeTypeException {
         return addLabelToNote(getNodeById(noteId).getNote(), labelId);
     }
 
     @Override
-    public Node addLabelToNote(Node note, String labelId) throws AuthError {
+    public Node addLabelToNote(Node note, String labelId) throws AuthError, BadNodeTypeException {
+        NodePair.checkIfNoteType(note);
+
         LocalDateTime now = LocalDateTime.now();
 
         Timestamps timestamps = note.getTimestamps();
