@@ -1,0 +1,118 @@
+package io.github.rukins.gkeepapi.model.node;
+
+import java.time.LocalDateTime;
+
+public class Timestamps {
+    public static final String DEFAULT_DATETIME_FORMAT_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
+
+    public static final LocalDateTime DEFAULT_LOCALDATETIME = LocalDateTime
+            .of(1970, 1, 1, 0, 0);
+
+    private String kind;
+
+    private LocalDateTime created;
+
+    private LocalDateTime updated;
+
+    private LocalDateTime trashed;
+
+    private LocalDateTime userEdited;
+
+    private LocalDateTime recentSharedChangesSeen;
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private final Timestamps timestamps;
+
+        private Builder() {
+            timestamps = new Timestamps();
+        }
+
+        public Builder created(LocalDateTime created) {
+            timestamps.setCreated(created);
+            return this;
+        }
+
+        public Builder updated(LocalDateTime updated) {
+            timestamps.setUpdated(updated);
+            return this;
+        }
+
+        public Builder trashed(LocalDateTime trashed) {
+            timestamps.setTrashed(trashed);
+            return this;
+        }
+
+        public Builder userEdited(LocalDateTime userEdited) {
+            timestamps.setUserEdited(userEdited);
+            return this;
+        }
+
+        public Builder recentSharedChangesSeen(LocalDateTime recentSharedChangesSeen) {
+            timestamps.setRecentSharedChangesSeen(recentSharedChangesSeen);
+            return this;
+        }
+
+        public Timestamps build() {
+            return timestamps;
+        }
+    }
+
+    public String getKind() {
+        return kind;
+    }
+
+    public LocalDateTime getCreated() {
+        return created;
+    }
+
+    public void setCreated(LocalDateTime created) {
+        this.created = created;
+    }
+
+    public LocalDateTime getUpdated() {
+        return updated;
+    }
+
+    public void setUpdated(LocalDateTime updated) {
+        this.updated = updated;
+    }
+
+    public LocalDateTime getTrashed() {
+        return trashed;
+    }
+
+    public void setTrashed(LocalDateTime trashed) {
+        this.trashed = trashed;
+    }
+
+    public LocalDateTime getUserEdited() {
+        return userEdited;
+    }
+
+    public void setUserEdited(LocalDateTime userEdited) {
+        this.userEdited = userEdited;
+    }
+
+    public LocalDateTime getRecentSharedChangesSeen() {
+        return recentSharedChangesSeen;
+    }
+
+    public void setRecentSharedChangesSeen(LocalDateTime recentSharedChangesSeen) {
+        this.recentSharedChangesSeen = recentSharedChangesSeen;
+    }
+
+    @Override
+    public String toString() {
+        return "Timestamps{" +
+                "created=" + created +
+                ", updated=" + updated +
+                ", trashed=" + trashed +
+                ", userEdited=" + userEdited +
+                ", recentSharedChangesSeen=" + recentSharedChangesSeen +
+                '}';
+    }
+}
