@@ -186,9 +186,7 @@ public class GKeepAPIImpl implements GKeepAPI {
     @Override
     public Node trashNode(String noteId) throws AuthError, BadNodeTypeException {
         return trashNode(
-                Node.builder()
-                        .id(noteId)
-                        .build()
+                Node.builder().id(noteId).build()
         );
     }
 
@@ -201,11 +199,45 @@ public class GKeepAPIImpl implements GKeepAPI {
 
         note.setTimestamps(timestamps);
 
-        NodeRequest nodeRequest = NodeRequest.withDefaultValues()
-                .nodes(List.of(note))
-                .build();
+        return updateNode(note);
+    }
 
-        return changes(nodeRequest).getNodes().get(0);
+    @Override
+    public Node deleteNode(String noteId) throws AuthError, BadNodeTypeException {
+        return deleteNode(
+                Node.builder().id(noteId).build()
+        );
+    }
+
+    @Override
+    public Node deleteNode(Node note) throws AuthError, BadNodeTypeException {
+        NodePair.checkIfNoteType(note);
+
+        Timestamps timestamps = note.getTimestamps();
+        timestamps.setDeleted(LocalDateTime.now());
+
+        note.setTimestamps(timestamps);
+
+        return updateNode(note);
+    }
+
+    @Override
+    public Node restoreNode(String noteId) throws AuthError, BadNodeTypeException {
+        return restoreNode(
+                Node.builder().id(noteId).build()
+        );
+    }
+
+    @Override
+    public Node restoreNode(Node note) throws AuthError, BadNodeTypeException {
+        NodePair.checkIfNoteType(note);
+
+        Timestamps timestamps = note.getTimestamps();
+        timestamps.setTrashed(Timestamps.DEFAULT_LOCALDATETIME);
+
+        note.setTimestamps(timestamps);
+
+        return updateNode(note);
     }
 
     @Override
