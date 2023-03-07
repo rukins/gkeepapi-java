@@ -1,4 +1,4 @@
-package io.github.rukins.gkeepapi.model.node.responseHeader;
+package io.github.rukins.gkeepapi.model.node.responseheader;
 
 public class ResponseHeader {
     private ResponseHeader() {

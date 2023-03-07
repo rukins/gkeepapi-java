@@ -1,6 +1,6 @@
 package io.github.rukins.gkeepapi.model.node;
 
-import io.github.rukins.gkeepapi.model.node.responseHeader.ResponseHeader;
+import io.github.rukins.gkeepapi.model.node.responseheader.ResponseHeader;
 import io.github.rukins.gkeepapi.model.node.userinfo.UserInfo;
 import io.github.rukins.gkeepapi.model.node.nodeentity.Node;
 
