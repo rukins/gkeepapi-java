@@ -31,13 +31,8 @@ public interface GKeepAPI {
     Node updateNode(Node note) throws AuthError, BadNodeTypeException;
 
     Node trashNode(String noteId) throws AuthError, BadNodeTypeException;
-    Node trashNode(Node note) throws AuthError, BadNodeTypeException;
-
     Node deleteNode(String noteId) throws AuthError, BadNodeTypeException;
-    Node deleteNode(Node note) throws AuthError, BadNodeTypeException;
-
     Node restoreNode(String noteId) throws AuthError, BadNodeTypeException;
-    Node restoreNode(Node note) throws AuthError, BadNodeTypeException;
 
 
 

@@ -187,53 +187,35 @@ public class GKeepAPIImpl implements GKeepAPI {
 
     @Override
     public Node trashNode(String noteId) throws AuthError, BadNodeTypeException {
-        return trashNode(
-                Node.builder().timestamps(new Timestamps()).type(NodeType.NOTE).id(noteId).build()
+        return updateNode(
+                Node.builder()
+                        .timestamps(Timestamps.builder().trashed(LocalDateTime.now()).build())
+                        .type(NodeType.NOTE)
+                        .id(noteId)
+                        .build()
         );
-    }
-
-    @Override
-    public Node trashNode(Node note) throws AuthError, BadNodeTypeException {
-        Timestamps timestamps = note.getTimestamps();
-        timestamps.setTrashed(LocalDateTime.now());
-
-        note.setTimestamps(timestamps);
-
-        return updateNode(note);
     }
 
     @Override
     public Node deleteNode(String noteId) throws AuthError, BadNodeTypeException {
-        return deleteNode(
-                Node.builder().timestamps(new Timestamps()).type(NodeType.NOTE).id(noteId).build()
+        return updateNode(
+                Node.builder()
+                        .timestamps(Timestamps.builder().deleted(LocalDateTime.now()).build())
+                        .type(NodeType.NOTE)
+                        .id(noteId)
+                        .build()
         );
-    }
-
-    @Override
-    public Node deleteNode(Node note) throws AuthError, BadNodeTypeException {
-        Timestamps timestamps = note.getTimestamps();
-        timestamps.setDeleted(LocalDateTime.now());
-
-        note.setTimestamps(timestamps);
-
-        return updateNode(note);
     }
 
     @Override
     public Node restoreNode(String noteId) throws AuthError, BadNodeTypeException {
-        return restoreNode(
-                Node.builder().timestamps(new Timestamps()).type(NodeType.NOTE).id(noteId).build()
+        return updateNode(
+                Node.builder()
+                        .timestamps(Timestamps.builder().trashed(Timestamps.DEFAULT_LOCALDATETIME).build())
+                        .type(NodeType.NOTE)
+                        .id(noteId)
+                        .build()
         );
-    }
-
-    @Override
-    public Node restoreNode(Node note) throws AuthError, BadNodeTypeException {
-        Timestamps timestamps = note.getTimestamps();
-        timestamps.setTrashed(Timestamps.DEFAULT_LOCALDATETIME);
-
-        note.setTimestamps(timestamps);
-
-        return updateNode(note);
     }
 
     @Override
