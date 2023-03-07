@@ -3,14 +3,14 @@ package io.github.rukins.gkeepapi;
 import io.github.rukins.gkeepapi.client.GKeepClientWrapper;
 import io.github.rukins.gkeepapi.exception.BadNodeTypeException;
 import io.github.rukins.gkeepapi.model.NodePair;
-import io.github.rukins.gkeepapi.model.node.Timestamps;
 import io.github.rukins.gkeepapi.model.node.NodeRequest;
 import io.github.rukins.gkeepapi.model.node.NodeResponse;
-import io.github.rukins.gkeepapi.model.node.userinfo.Label;
-import io.github.rukins.gkeepapi.model.node.userinfo.UserInfo;
+import io.github.rukins.gkeepapi.model.node.Timestamps;
 import io.github.rukins.gkeepapi.model.node.nodeentity.LabelId;
 import io.github.rukins.gkeepapi.model.node.nodeentity.Node;
 import io.github.rukins.gkeepapi.model.node.nodeentity.NodeType;
+import io.github.rukins.gkeepapi.model.node.userinfo.Label;
+import io.github.rukins.gkeepapi.model.node.userinfo.UserInfo;
 import io.github.rukins.gkeepapi.utils.IdUtils;
 import io.github.rukins.gpsoauth.Auth;
 import io.github.rukins.gpsoauth.exception.AuthError;
@@ -168,7 +168,7 @@ public class GKeepAPIImpl implements GKeepAPI {
     @Override
     public Node updateNode(String title, String noteId) throws AuthError, BadNodeTypeException {
         return updateNode(
-                Node.builder().id(noteId).title(title).build()
+                Node.builder().type(NodeType.NOTE).id(noteId).title(title).build()
         );
     }
 
@@ -180,20 +180,20 @@ public class GKeepAPIImpl implements GKeepAPI {
                 .nodes(List.of(note))
                 .build();
 
-        return changes(nodeRequest).getNodes().get(0);
+        List<Node> nodes = changes(nodeRequest).getNodes();
+
+        return nodes != null && nodes.size() == 1 ? nodes.get(0) : null;
     }
 
     @Override
     public Node trashNode(String noteId) throws AuthError, BadNodeTypeException {
         return trashNode(
-                Node.builder().id(noteId).build()
+                Node.builder().timestamps(new Timestamps()).type(NodeType.NOTE).id(noteId).build()
         );
     }
 
     @Override
     public Node trashNode(Node note) throws AuthError, BadNodeTypeException {
-        NodePair.checkIfNoteType(note);
-
         Timestamps timestamps = note.getTimestamps();
         timestamps.setTrashed(LocalDateTime.now());
 
@@ -205,14 +205,12 @@ public class GKeepAPIImpl implements GKeepAPI {
     @Override
     public Node deleteNode(String noteId) throws AuthError, BadNodeTypeException {
         return deleteNode(
-                Node.builder().id(noteId).build()
+                Node.builder().timestamps(new Timestamps()).type(NodeType.NOTE).id(noteId).build()
         );
     }
 
     @Override
     public Node deleteNode(Node note) throws AuthError, BadNodeTypeException {
-        NodePair.checkIfNoteType(note);
-
         Timestamps timestamps = note.getTimestamps();
         timestamps.setDeleted(LocalDateTime.now());
 
@@ -224,14 +222,12 @@ public class GKeepAPIImpl implements GKeepAPI {
     @Override
     public Node restoreNode(String noteId) throws AuthError, BadNodeTypeException {
         return restoreNode(
-                Node.builder().id(noteId).build()
+                Node.builder().timestamps(new Timestamps()).type(NodeType.NOTE).id(noteId).build()
         );
     }
 
     @Override
     public Node restoreNode(Node note) throws AuthError, BadNodeTypeException {
-        NodePair.checkIfNoteType(note);
-
         Timestamps timestamps = note.getTimestamps();
         timestamps.setTrashed(Timestamps.DEFAULT_LOCALDATETIME);
 
@@ -351,11 +347,7 @@ public class GKeepAPIImpl implements GKeepAPI {
                 List.of(new LabelId(labelId))
         );
 
-        NodeRequest nodeRequest = NodeRequest.withDefaultValues()
-                .nodes(List.of(note))
-                .build();
-
-        return changes(nodeRequest).getNodes().get(0);
+        return updateNode(note);
     }
 
     @Override
