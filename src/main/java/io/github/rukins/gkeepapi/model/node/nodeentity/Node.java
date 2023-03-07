@@ -413,6 +413,13 @@ public class Node implements Comparable<Node> {
 
     @Override
     public String toString() {
+        if (this.type == null)
+            return "Note{" +
+                "id='" + id + '\'' +
+                ", type=" + type +
+                ", timestamps=" + timestamps +
+                '}';
+
         return switch (this.type) {
             case NOTE -> "Note{" +
                     "id='" + id + '\'' +
