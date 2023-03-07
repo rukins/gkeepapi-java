@@ -56,10 +56,7 @@ public interface GKeepAPI {
     List<Label> deleteLabel(String labelId) throws AuthError;
     List<Label> deleteLabel(Label label) throws AuthError;
 
-
-
     Node addLabelToNode(String noteId, String labelId) throws AuthError, BadNodeTypeException;
-    Node addLabelToNode(Node note, String labelId) throws AuthError, BadNodeTypeException;
 
 
 

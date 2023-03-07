@@ -359,21 +359,13 @@ public class GKeepAPIImpl implements GKeepAPI {
 
     @Override
     public Node addLabelToNode(String noteId, String labelId) throws AuthError, BadNodeTypeException {
-        return addLabelToNode(
-                Node.builder().id(noteId).build(),
-                labelId
+        return updateNode(
+                Node.builder()
+                        .labelIds(List.of(new LabelId(labelId)))
+                        .type(NodeType.NOTE)
+                        .id(noteId)
+                        .build()
         );
-    }
-
-    @Override
-    public Node addLabelToNode(Node note, String labelId) throws AuthError, BadNodeTypeException {
-        NodePair.checkIfNoteType(note);
-
-        note.setLabelIds(
-                List.of(new LabelId(labelId))
-        );
-
-        return updateNode(note);
     }
 
     @Override
