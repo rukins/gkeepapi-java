@@ -411,6 +411,11 @@ public class Node implements Comparable<Node> {
         this.superListItemServerId = superListItemServerId;
     }
 
+    public Boolean isTrashed() {
+        return this.timestamps.getTrashed() != null
+                && !Timestamps.DEFAULT_LOCALDATETIME.equals(this.timestamps.getTrashed());
+    }
+
     @Override
     public String toString() {
         if (this.type == null)
