@@ -1,6 +1,7 @@
 package io.github.rukins.gkeepapi.model.node.nodeentity;
 
 import io.github.rukins.gkeepapi.model.node.Timestamps;
+import io.github.rukins.gkeepapi.model.node.nodeentity.annotation.AnnotationsGroup;
 import io.github.rukins.gkeepapi.model.node.nodesettings.NodeSettings;
 
 import java.util.List;
@@ -213,8 +214,6 @@ public class Node implements Comparable<Node> {
             return node;
         }
     }
-
-
 
     public String getKind() {
         return kind;
