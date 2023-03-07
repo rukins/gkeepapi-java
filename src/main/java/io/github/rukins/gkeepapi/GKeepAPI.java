@@ -34,6 +34,12 @@ public interface GKeepAPI {
     Node deleteNode(String noteId) throws AuthError, BadNodeTypeException;
     Node restoreNode(String noteId) throws AuthError, BadNodeTypeException;
 
+    Node pinNode(String noteId) throws AuthError, BadNodeTypeException;
+    Node unpinNode(String noteId) throws AuthError, BadNodeTypeException;
+
+    Node archiveNode(String noteId) throws AuthError, BadNodeTypeException;
+    Node unarchiveNode(String noteId) throws AuthError, BadNodeTypeException;
+
 
 
     List<Label> getAllLabels() throws AuthError;

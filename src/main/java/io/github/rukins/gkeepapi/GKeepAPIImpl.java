@@ -219,6 +219,50 @@ public class GKeepAPIImpl implements GKeepAPI {
     }
 
     @Override
+    public Node pinNode(String noteId) throws AuthError, BadNodeTypeException {
+        return updateNode(
+                Node.builder()
+                        .pinned(true)
+                        .type(NodeType.NOTE)
+                        .id(noteId)
+                        .build()
+        );
+    }
+
+    @Override
+    public Node unpinNode(String noteId) throws AuthError, BadNodeTypeException {
+        return updateNode(
+                Node.builder()
+                        .pinned(false)
+                        .type(NodeType.NOTE)
+                        .id(noteId)
+                        .build()
+        );
+    }
+
+    @Override
+    public Node archiveNode(String noteId) throws AuthError, BadNodeTypeException {
+        return updateNode(
+                Node.builder()
+                        .archived(true)
+                        .type(NodeType.NOTE)
+                        .id(noteId)
+                        .build()
+        );
+    }
+
+    @Override
+    public Node unarchiveNode(String noteId) throws AuthError, BadNodeTypeException {
+        return updateNode(
+                Node.builder()
+                        .archived(false)
+                        .type(NodeType.NOTE)
+                        .id(noteId)
+                        .build()
+        );
+    }
+
+    @Override
     public List<Label> getAllLabels() throws AuthError {
         return getFullInfo().getUserInfo().getLabels();
     }
