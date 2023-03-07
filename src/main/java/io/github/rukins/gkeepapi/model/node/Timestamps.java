@@ -16,6 +16,8 @@ public class Timestamps {
 
     private LocalDateTime trashed;
 
+    private LocalDateTime deleted;
+
     private LocalDateTime userEdited;
 
     private LocalDateTime recentSharedChangesSeen;
@@ -43,6 +45,11 @@ public class Timestamps {
 
         public Builder trashed(LocalDateTime trashed) {
             timestamps.setTrashed(trashed);
+            return this;
+        }
+
+        public Builder deleted(LocalDateTime deleted) {
+            timestamps.setDeleted(deleted);
             return this;
         }
 
@@ -89,6 +96,14 @@ public class Timestamps {
         this.trashed = trashed;
     }
 
+    public LocalDateTime getDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(LocalDateTime deleted) {
+        this.deleted = deleted;
+    }
+
     public LocalDateTime getUserEdited() {
         return userEdited;
     }
@@ -108,9 +123,11 @@ public class Timestamps {
     @Override
     public String toString() {
         return "Timestamps{" +
-                "created=" + created +
+                "kind='" + kind + '\'' +
+                ", created=" + created +
                 ", updated=" + updated +
                 ", trashed=" + trashed +
+                ", deleted=" + deleted +
                 ", userEdited=" + userEdited +
                 ", recentSharedChangesSeen=" + recentSharedChangesSeen +
                 '}';
