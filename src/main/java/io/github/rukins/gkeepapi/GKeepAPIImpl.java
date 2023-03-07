@@ -112,8 +112,15 @@ public class GKeepAPIImpl implements GKeepAPI {
                 .nodes(List.of(nodePair.getNote(), nodePair.getListItem()))
                 .build();
 
+        String noteId = nodePair.getNote().getId();
+
+        // the server should return only created nodes, but sometimes it returns others for some reason,
+        // so the filtering is necessary to get correct result
         return new NodePair(
-                changes(nodeRequest).getNodes()
+                changes(nodeRequest).getNodes().stream()
+                        .filter(n -> noteId.equals(n.getId()) || noteId.equals(n.getParentId()))
+                        .sorted()
+                        .toList()
         );
     }
 
@@ -160,8 +167,15 @@ public class GKeepAPIImpl implements GKeepAPI {
                 .nodes(List.of(nodePair.getNote(), nodePair.getListItem()))
                 .build();
 
+        String noteId = nodePair.getNote().getId();
+
+        // the server should return only created nodes, but sometimes it returns others for some reason,
+        // so the filtering is necessary to get correct result
         return new NodePair(
-                changes(nodeRequest).getNodes()
+                changes(nodeRequest).getNodes().stream()
+                        .filter(n -> noteId.equals(n.getId()) || noteId.equals(n.getParentId()))
+                        .sorted()
+                        .toList()
         );
     }
 
