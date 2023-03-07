@@ -264,7 +264,11 @@ public class GKeepAPIImpl implements GKeepAPI {
 
     @Override
     public List<Label> getAllLabels() throws AuthError {
-        return getFullInfo().getUserInfo().getLabels();
+        NodeRequest nodeRequest = NodeRequest.withDefaultValues()
+                .userInfo(new UserInfo())
+                .build();
+
+        return changes(nodeRequest).getUserInfo().getLabels();
     }
 
     @Override
@@ -282,18 +286,9 @@ public class GKeepAPIImpl implements GKeepAPI {
 
     @Override
     public List<Label> createLabel(String labelName) throws AuthError {
-        LocalDateTime now = LocalDateTime.now();
-
         Label label = Label.withDefaultValues()
                 .mainId(IdUtils.generateId())
                 .name(labelName)
-                .timestamps(
-                        Timestamps.builder()
-                                .created(now)
-                                .updated(now)
-                                .userEdited(now)
-                                .build()
-                )
                 .build();
 
         return createLabel(label);
@@ -301,6 +296,15 @@ public class GKeepAPIImpl implements GKeepAPI {
 
     @Override
     public List<Label> createLabel(Label label) throws AuthError {
+        LocalDateTime now = LocalDateTime.now();
+
+        label.setTimestamps(
+                Timestamps.builder()
+                        .created(now)
+                        .updated(now)
+                        .build()
+        );
+
         NodeRequest nodeRequest = NodeRequest.withDefaultValues()
                 .userInfo(
                         UserInfo.builder()
@@ -314,8 +318,16 @@ public class GKeepAPIImpl implements GKeepAPI {
 
     @Override
     public List<Label> updateLabel(String name, String labelId) throws AuthError {
+        LocalDateTime now = LocalDateTime.now();
+
+        // the server returns 500 without adding the created and updated timestamps,
+        // though updating nodes works good without it
         return updateLabel(
-                Label.builder().name(name).mainId(labelId).build()
+                Label.withDefaultValues()
+                        .name(name)
+                        .mainId(labelId)
+                        .timestamps(Timestamps.builder().created(now).updated(now).build())
+                        .build()
         );
     }
 
@@ -334,27 +346,12 @@ public class GKeepAPIImpl implements GKeepAPI {
 
     @Override
     public List<Label> deleteLabel(String labelId) throws AuthError {
-        return deleteLabel(
-                Label.builder().mainId(labelId).build()
+        return updateLabel(
+                Label.builder()
+                        .timestamps(Timestamps.builder().deleted(LocalDateTime.now()).build())
+                        .mainId(labelId)
+                        .build()
         );
-    }
-
-    @Override
-    public List<Label> deleteLabel(Label label) throws AuthError {
-        Timestamps timestamps = label.getTimestamps();
-        timestamps.setTrashed(LocalDateTime.now());
-
-        label.setTimestamps(timestamps);
-
-        NodeRequest nodeRequest = NodeRequest.withDefaultValues()
-                .userInfo(
-                        UserInfo.builder()
-                                .labels(List.of(label))
-                                .build()
-                )
-                .build();
-
-        return changes(nodeRequest).getUserInfo().getLabels();
     }
 
     @Override
