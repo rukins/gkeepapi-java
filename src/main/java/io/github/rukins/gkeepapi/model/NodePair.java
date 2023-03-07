@@ -11,6 +11,11 @@ public class NodePair {
 
     private Node listItem;
 
+    public NodePair() {
+        this.note = Node.builder().type(NodeType.NOTE).build();
+        this.listItem = Node.builder().type(NodeType.LIST_ITEM).build();
+    }
+
     public NodePair(List<Node> node) throws BadNodeTypeException {
         checkIfNoteType(node.get(0));
         checkIfListItemType(node.get(1));
@@ -52,13 +57,13 @@ public class NodePair {
     }
 
     public static void checkIfNoteType(Node node) throws BadNodeTypeException {
-        if (node.getType() != NodeType.NOTE) {
+        if (node == null || node.getType() != NodeType.NOTE) {
             throw new BadNodeTypeException("The node type should be NOTE");
         }
     }
 
     public static void checkIfListItemType(Node node) throws BadNodeTypeException {
-        if (node.getType() != NodeType.LIST_ITEM) {
+        if (node == null || node.getType() != NodeType.LIST_ITEM) {
             throw new BadNodeTypeException("The node type should be LIST_ITEM");
         }
     }
