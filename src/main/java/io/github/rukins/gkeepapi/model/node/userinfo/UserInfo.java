@@ -10,7 +10,7 @@ public class UserInfo {
 
     private SingleSettings settings;
 
-    private List<ContextualCoachmarksAcked> contextualCoachmarksAcked;
+    private List<String> contextualCoachmarksAcked;
 
     private List<Label> labels;
 
@@ -39,7 +39,7 @@ public class UserInfo {
             return this;
         }
 
-        public Builder contextualCoachmarksAcked(List<ContextualCoachmarksAcked> contextualCoachmarksAcked) {
+        public Builder contextualCoachmarksAcked(List<String> contextualCoachmarksAcked) {
             userInfo.setContextualCoachmarksAcked(contextualCoachmarksAcked);
             return this;
         }
@@ -70,11 +70,11 @@ public class UserInfo {
         this.settings = settings;
     }
 
-    public List<ContextualCoachmarksAcked> getContextualCoachmarksAcked() {
+    public List<String> getContextualCoachmarksAcked() {
         return contextualCoachmarksAcked;
     }
 
-    public void setContextualCoachmarksAcked(List<ContextualCoachmarksAcked> contextualCoachmarksAcked) {
+    public void setContextualCoachmarksAcked(List<String> contextualCoachmarksAcked) {
         this.contextualCoachmarksAcked = contextualCoachmarksAcked;
     }
 

@@ -1,63 +1,73 @@
 package io.github.rukins.gkeepapi;
 
-import io.github.rukins.gkeepapi.exception.BadNodeTypeException;
-import io.github.rukins.gkeepapi.model.NodePair;
+import io.github.rukins.gkeepapi.client.GKeepClientWrapper;
 import io.github.rukins.gkeepapi.model.node.NodeRequest;
 import io.github.rukins.gkeepapi.model.node.NodeResponse;
-import io.github.rukins.gkeepapi.model.node.userinfo.Label;
 import io.github.rukins.gkeepapi.model.node.nodeentity.Node;
+import io.github.rukins.gkeepapi.model.node.userinfo.UserInfo;
+import io.github.rukins.gkeepapi.utils.NodeUtils;
 import io.github.rukins.gpsoauth.exception.AuthError;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public interface GKeepAPI {
-    NodeResponse getFullInfo() throws AuthError;
+public class GKeepAPI {
+    private final GKeepClientWrapper client;
 
+    private String currentVersion;
 
+    public GKeepAPI(String masterToken) {
+        this.client = new GKeepClientWrapper(masterToken);
+    }
 
-    List<Node> getAllNodes() throws AuthError;
+    public GKeepAPI(String masterToken, String version) {
+        this.client = new GKeepClientWrapper(masterToken);
+        this.currentVersion = version;
+    }
 
-    NodePair getNodePairById(String noteId) throws AuthError, BadNodeTypeException;
-    NodePair getNodePairById(String noteId, List<Node> allNodes) throws BadNodeTypeException;
+    public NodeResponse getFullInfo() throws AuthError {
+        List<Node> nodes = new ArrayList<>();
+        UserInfo userInfo;
 
-    NodePair createNodePair(String title, String text) throws AuthError, BadNodeTypeException;
-    NodePair createNodePair(NodePair nodePair) throws AuthError, BadNodeTypeException;
+        NodeResponse fullInfo = changes();
+        userInfo = fullInfo.getUserInfo();
 
-    NodePair updateNodePair(String text, String noteId, String listItemId) throws AuthError, BadNodeTypeException;
-    NodePair updateNodePair(String title, String text, String noteId, String listItemId) throws AuthError, BadNodeTypeException;
-    NodePair updateNodePair(NodePair nodePair) throws AuthError, BadNodeTypeException;
+        while (fullInfo.getTruncated()) {
+            if (fullInfo.getNodes() != null) {
+                nodes.addAll(fullInfo.getNodes());
+            }
+            fullInfo = changes();
+            NodeUtils.mergeUserInfo(userInfo, fullInfo.getUserInfo());
+        }
 
-    Node updateNode(String title, String noteId) throws AuthError, BadNodeTypeException;
-    Node updateNode(Node note) throws AuthError, BadNodeTypeException;
+        if (fullInfo.getNodes() != null) {
+            nodes.addAll(fullInfo.getNodes());
+        }
 
-    Node trashNode(String noteId) throws AuthError, BadNodeTypeException;
-    Node deleteNode(String noteId) throws AuthError, BadNodeTypeException;
-    Node restoreNode(String noteId) throws AuthError, BadNodeTypeException;
+        fullInfo.setNodes(nodes.stream().sorted().toList());
+        fullInfo.setUserInfo(userInfo);
 
-    Node pinNode(String noteId) throws AuthError, BadNodeTypeException;
-    Node unpinNode(String noteId) throws AuthError, BadNodeTypeException;
+        return fullInfo;
+    }
 
-    Node archiveNode(String noteId) throws AuthError, BadNodeTypeException;
-    Node unarchiveNode(String noteId) throws AuthError, BadNodeTypeException;
+    public NodeResponse changes(NodeRequest nodeRequest) throws AuthError {
+        nodeRequest.setTargetVersion(currentVersion);
 
+        NodeResponse nodeResponse = client.changes(nodeRequest);
+        currentVersion = nodeResponse.getToVersion();
 
+        return nodeResponse;
+    }
 
-    List<Label> getAllLabels() throws AuthError;
+    public NodeResponse changes() throws AuthError {
+        return changes(NodeRequest.withDefaultValues().build());
+    }
 
-    Label getLabelById(String labelId) throws AuthError;
-    Label getLabelById(String labelId, List<Label> allLabels);
+    public String getCurrentVersion() {
+        return currentVersion;
+    }
 
-    List<Label> createLabel(String labelName) throws AuthError;
-    List<Label> createLabel(Label label) throws AuthError;
-
-    List<Label> updateLabel(String name, String labelId) throws AuthError;
-    List<Label> updateLabel(Label label) throws AuthError;
-
-    List<Label> deleteLabel(String labelId) throws AuthError;
-
-    Node addLabelToNode(String noteId, String labelId) throws AuthError, BadNodeTypeException;
-
-
-
-    NodeResponse changes(NodeRequest nodeRequest) throws AuthError;
+    public void setCurrentVersion(String currentVersion) {
+        this.currentVersion = currentVersion;
+    }
 }

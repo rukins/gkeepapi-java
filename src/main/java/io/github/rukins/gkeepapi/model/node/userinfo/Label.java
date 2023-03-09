@@ -5,6 +5,7 @@ import io.github.rukins.gkeepapi.model.node.Timestamps;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class Label {
     private String name;
@@ -131,5 +132,22 @@ public class Label {
                 ", mainId='" + mainId + '\'' +
                 ", timestamps=" + timestamps +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Label label)) return false;
+        return Objects.equals(name, label.name)
+                && Objects.equals(mainId, label.mainId)
+                && Objects.equals(timestamps, label.timestamps)
+                && Objects.equals(lastMerged, label.lastMerged)
+                && Objects.equals(mergedIds, label.mergedIds)
+                && Objects.equals(revision, label.revision);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, mainId, timestamps, lastMerged, mergedIds, revision);
     }
 }

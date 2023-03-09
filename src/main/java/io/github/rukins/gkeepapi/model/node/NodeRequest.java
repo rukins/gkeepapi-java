@@ -25,7 +25,7 @@ public class NodeRequest {
 
     public static Builder withDefaultValues() {
         return new Builder()
-                .clientTimestamp(LocalDateTime.now())
+                .clientTimestamp(LocalDateTime.now(Timestamps.DEFAULT_ZONE_ID))
                 .nodes(new ArrayList<>())
                 .requestHeader(RequestHeader.withDefaultValues().build());
     }

@@ -1,5 +1,7 @@
 package io.github.rukins.gkeepapi.model.node.nodesettings;
 
+import java.util.Objects;
+
 public class NodeSettings {
     public static final NodeSettings DEFAULT_NODE_SETTINGS = new NodeSettings(
             NewListItemPlacement.TOP,
@@ -52,5 +54,19 @@ public class NodeSettings {
                 ", checkedListItemsPolicy=" + checkedListItemsPolicy +
                 ", graveyardState=" + graveyardState +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof NodeSettings that)) return false;
+        return newListItemPlacement == that.newListItemPlacement
+                && checkedListItemsPolicy == that.checkedListItemsPolicy
+                && graveyardState == that.graveyardState;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(newListItemPlacement, checkedListItemsPolicy, graveyardState);
     }
 }

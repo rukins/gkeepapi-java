@@ -5,6 +5,7 @@ import io.github.rukins.gkeepapi.model.node.nodeentity.annotation.AnnotationsGro
 import io.github.rukins.gkeepapi.model.node.nodesettings.NodeSettings;
 
 import java.util.List;
+import java.util.Objects;
 
 public class Node implements Comparable<Node> {
     private String kind;
@@ -443,6 +444,43 @@ public class Node implements Comparable<Node> {
                     ", text='" + text + '\'' +
                     '}';
         };
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Node node)) return false;
+        return id.equals(node.id)
+                && Objects.equals(serverId, node.serverId)
+                && Objects.equals(parentId, node.parentId)
+                && Objects.equals(parentServerId, node.parentServerId)
+                && type == node.type
+                && Objects.equals(timestamps, node.timestamps)
+                && Objects.equals(title, node.title)
+                && Objects.equals(text, node.text)
+                && Objects.equals(labelIds, node.labelIds)
+                && Objects.equals(nodeSettings, node.nodeSettings)
+                && Objects.equals(isArchived, node.isArchived)
+                && Objects.equals(isPinned, node.isPinned)
+                && color == node.color
+                && Objects.equals(background, node.background)
+                && Objects.equals(sortValue, node.sortValue)
+                && Objects.equals(shareState, node.shareState)
+                && Objects.equals(annotationsGroup, node.annotationsGroup)
+                && Objects.equals(lastModifierEmail, node.lastModifierEmail)
+                && Objects.equals(moved, node.moved)
+                && Objects.equals(xplatModel, node.xplatModel)
+                && Objects.equals(checked, node.checked)
+                && Objects.equals(baseVersion, node.baseVersion)
+                && Objects.equals(superListItemId, node.superListItemId)
+                && Objects.equals(superListItemServerId, node.superListItemServerId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, serverId, parentId, parentServerId, type, timestamps, title, text, labelIds,
+                nodeSettings, isArchived, isPinned, color, background, sortValue, shareState, annotationsGroup,
+                lastModifierEmail, moved, xplatModel, checked, baseVersion, superListItemId, superListItemServerId);
     }
 
     @Override

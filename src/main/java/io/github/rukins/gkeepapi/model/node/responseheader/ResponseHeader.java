@@ -1,9 +1,6 @@
 package io.github.rukins.gkeepapi.model.node.responseheader;
 
 public class ResponseHeader {
-    private ResponseHeader() {
-    }
-
     private UpdateState updateState;
 
     private String requestId;

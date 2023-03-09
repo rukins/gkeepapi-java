@@ -1,6 +1,7 @@
 package io.github.rukins.gkeepapi.model.node.nodeentity.annotation;
 
 import java.util.List;
+import java.util.Objects;
 
 public class AnnotationsGroup {
     private String kind;
@@ -29,5 +30,17 @@ public class AnnotationsGroup {
                 "kind='" + kind + '\'' +
                 ", annotations=" + annotations +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof AnnotationsGroup that)) return false;
+        return Objects.equals(annotations, that.annotations);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(annotations);
     }
 }
