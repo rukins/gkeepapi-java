@@ -420,7 +420,7 @@ public class Node implements Comparable<Node> {
     @Override
     public String toString() {
         if (this.type == null)
-            return "Note{" +
+            return "Node{" +
                 "id='" + id + '\'' +
                 ", type=" + type +
                 ", timestamps=" + timestamps +
@@ -485,6 +485,9 @@ public class Node implements Comparable<Node> {
 
     @Override
     public int compareTo(Node node) {
-        return this.getType().compareTo(node.getType());
+        if (type == null || node.getType() == null) {
+            return -1;
+        }
+        return type.compareTo(node.getType());
     }
 }
