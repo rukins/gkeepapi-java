@@ -1,7 +1,7 @@
 package io.github.rukins.gkeepapi.typeadapter;
 
 import com.google.gson.*;
-import io.github.rukins.gkeepapi.model.node.Timestamps;
+import io.github.rukins.gkeepapi.model.Timestamps;
 
 import java.lang.reflect.Type;
 import java.time.LocalDateTime;

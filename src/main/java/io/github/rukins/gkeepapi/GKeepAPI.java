@@ -1,10 +1,10 @@
 package io.github.rukins.gkeepapi;
 
 import io.github.rukins.gkeepapi.client.GKeepClientWrapper;
-import io.github.rukins.gkeepapi.model.node.NodeRequest;
-import io.github.rukins.gkeepapi.model.node.NodeResponse;
-import io.github.rukins.gkeepapi.model.node.nodeentity.Node;
-import io.github.rukins.gkeepapi.model.node.userinfo.UserInfo;
+import io.github.rukins.gkeepapi.model.node.nodeobject.Node;
+import io.github.rukins.gkeepapi.model.NodeRequest;
+import io.github.rukins.gkeepapi.model.NodeResponse;
+import io.github.rukins.gkeepapi.model.userinfo.UserInfo;
 import io.github.rukins.gkeepapi.utils.NodeUtils;
 import io.github.rukins.gpsoauth.exception.AuthError;
 
@@ -25,29 +25,29 @@ public class GKeepAPI {
         this.currentVersion = version;
     }
 
-    public NodeResponse getFullInfo() throws AuthError {
+    public NodeResponse getFullData() throws AuthError {
         List<Node> nodes = new ArrayList<>();
         UserInfo userInfo;
 
-        NodeResponse fullInfo = changes();
-        userInfo = fullInfo.getUserInfo();
+        NodeResponse fullData = changes();
+        userInfo = fullData.getUserInfo();
 
-        while (fullInfo.getTruncated()) {
-            if (fullInfo.getNodes() != null) {
-                nodes.addAll(fullInfo.getNodes());
+        while (fullData.getTruncated()) {
+            if (fullData.getNodes() != null) {
+                nodes.addAll(fullData.getNodes());
             }
-            fullInfo = changes();
-            NodeUtils.mergeUserInfo(userInfo, fullInfo.getUserInfo());
+            fullData = changes();
+            NodeUtils.mergeUserInfo(userInfo, fullData.getUserInfo());
         }
 
-        if (fullInfo.getNodes() != null) {
-            nodes.addAll(fullInfo.getNodes());
+        if (fullData.getNodes() != null) {
+            nodes.addAll(fullData.getNodes());
         }
 
-        fullInfo.setNodes(nodes.stream().sorted().toList());
-        fullInfo.setUserInfo(userInfo);
+        fullData.setNodes(nodes);
+        fullData.setUserInfo(userInfo);
 
-        return fullInfo;
+        return fullData;
     }
 
     public NodeResponse changes(NodeRequest nodeRequest) throws AuthError {

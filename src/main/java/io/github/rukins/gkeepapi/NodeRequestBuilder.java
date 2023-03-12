@@ -1,15 +1,14 @@
 package io.github.rukins.gkeepapi;
 
-import io.github.rukins.gkeepapi.exception.BadNodeTypeException;
-import io.github.rukins.gkeepapi.exception.NoIdException;
-import io.github.rukins.gkeepapi.model.NodePair;
-import io.github.rukins.gkeepapi.model.node.NodeRequest;
-import io.github.rukins.gkeepapi.model.node.Timestamps;
-import io.github.rukins.gkeepapi.model.node.nodeentity.LabelId;
-import io.github.rukins.gkeepapi.model.node.nodeentity.Node;
-import io.github.rukins.gkeepapi.model.node.nodeentity.NodeType;
-import io.github.rukins.gkeepapi.model.node.userinfo.Label;
-import io.github.rukins.gkeepapi.model.node.userinfo.UserInfo;
+import io.github.rukins.gkeepapi.model.NodeRequest;
+import io.github.rukins.gkeepapi.model.Timestamps;
+import io.github.rukins.gkeepapi.model.node.LabelId;
+import io.github.rukins.gkeepapi.model.node.nodeobject.ListItemNode;
+import io.github.rukins.gkeepapi.model.node.nodeobject.ListNode;
+import io.github.rukins.gkeepapi.model.node.nodeobject.Node;
+import io.github.rukins.gkeepapi.model.node.nodeobject.NoteNode;
+import io.github.rukins.gkeepapi.model.userinfo.Label;
+import io.github.rukins.gkeepapi.model.userinfo.UserInfo;
 import io.github.rukins.gkeepapi.utils.IdUtils;
 import io.github.rukins.gkeepapi.utils.NodeUtils;
 
@@ -28,205 +27,174 @@ public class NodeRequestBuilder {
         return new NodeRequestBuilder();
     }
 
-    public NodeRequestBuilder createNodePair(String title, String text) throws NoIdException, BadNodeTypeException {
+    public NodeRequestBuilder createNoteNode(NoteNode noteNode) {
         String noteId = IdUtils.generateId();
 
-        Node note = Node.withDefaultValuesAndType(NodeType.NOTE)
-                .id(noteId)
-                .title(title)
-                .timestamps(Timestamps.builder().trashed(Timestamps.DEFAULT_LOCALDATETIME).build())
-                .build();
+        noteNode.setId(noteId);
 
-        Node listItem = Node.withDefaultValuesAndType(NodeType.LIST_ITEM)
-                .id(IdUtils.generateId())
-                .parentId(noteId)
-                .text(text)
-                .timestamps(Timestamps.builder().trashed(Timestamps.DEFAULT_LOCALDATETIME).build())
-                .build();
-
-        return createOrUpdateNodePair(new NodePair(note, listItem));
-    }
-
-    public NodeRequestBuilder createOrUpdateNodePair(NodePair nodePair) throws NoIdException {
-        if (nodePair.getNote().getId() == null || nodePair.getNote().getId().isEmpty()) {
-            throw new NoIdException("Note should contain id field");
+        if (noteNode.getListItemNode() == null) {
+            noteNode.setListItemNode(
+                    ListItemNode.builder()
+                            .text("")
+                            .build()
+            );
         }
-        if (nodePair.getListItem().getId() == null || nodePair.getListItem().getId().isEmpty()
-                || nodePair.getListItem().getParentId() == null || nodePair.getListItem().getParentId().isEmpty()) {
-            throw new NoIdException("ListItem should contain id and parentId fields");
-        }
+        noteNode.getListItemNode().setId(IdUtils.generateId());
+        noteNode.getListItemNode().setParentId(noteId);
 
-        for (Node node : List.of(nodePair.getNote(), nodePair.getListItem())) {
-            if (idAndNodeMap.containsKey(node.getId())) {
-                idAndNodeMap.replace(node.getId(), NodeUtils.mergeNode(idAndNodeMap.get(node.getId()), node));
-            } else {
-                idAndNodeMap.put(node.getId(), node);
-            }
-        }
+        noteNode.getBlobNodes().forEach(n -> {
+            n.setId(IdUtils.generateId());
+            n.setParentId(noteId);
+            idAndNodeMap.put(n.getId(), n);
+        });
+
+        idAndNodeMap.put(noteId, noteNode);
+        idAndNodeMap.put(noteNode.getListItemNode().getId(), noteNode.getListItemNode());
 
         return this;
     }
 
-    public NodeRequestBuilder updateNodePair(String text,
-                                             String noteId, String listItemId) throws NoIdException, BadNodeTypeException {
-        NodePair nodePair = new NodePair(
-                Node.builder()
-                        .type(NodeType.NOTE)
-                        .id(noteId)
-                        .build(),
-                Node.builder()
-                        .type(NodeType.LIST_ITEM)
-                        .text(text)
-                        .id(listItemId)
-                        .parentId(noteId)
-                        .build()
-        );
-
-        return createOrUpdateNodePair(nodePair);
-    }
-
-    public NodeRequestBuilder updateNodePair(String title, String text,
-                                             String noteId, String listItemId) throws NoIdException, BadNodeTypeException {
-        NodePair nodePair = new NodePair(
-                Node.builder()
-                        .type(NodeType.NOTE)
-                        .title(title)
-                        .id(noteId)
-                        .build(),
-                Node.builder()
-                        .type(NodeType.LIST_ITEM)
-                        .text(text)
-                        .id(listItemId)
-                        .parentId(noteId)
-                        .build()
-        );
-
-        return createOrUpdateNodePair(nodePair);
-    }
-
-    public NodeRequestBuilder updateNode(Node note) throws NoIdException, BadNodeTypeException {
-        NodePair.checkIfNoteType(note);
-
-        if (note.getId() == null || note.getId().isEmpty()) {
-            throw new NoIdException("Note should contain id field");
-        }
-
-        if (idAndNodeMap.containsKey(note.getId())) {
-            idAndNodeMap.replace(note.getId(), NodeUtils.mergeNode(idAndNodeMap.get(note.getId()), note));
-        } else {
-            idAndNodeMap.put(note.getId(), note);
-        }
+    public NodeRequestBuilder createOrUpdateNoteNode(NoteNode noteNode) {
+        mergeIfExistsOrPut(noteNode);
+        mergeIfExistsOrPut(noteNode.getListItemNode());
+        noteNode.getBlobNodes().forEach(this::mergeIfExistsOrPut);
 
         return this;
     }
 
-    public NodeRequestBuilder updateNode(String title, String noteId) throws NoIdException, BadNodeTypeException {
-        return updateNode(
-                Node.builder().type(NodeType.NOTE).id(noteId).title(title).build()
-        );
+    public NodeRequestBuilder addLabelToNoteNode(NoteNode noteNode, Label label) {
+        noteNode.setLabelIds(List.of(new LabelId(label.getMainId())));
+        mergeIfExistsOrPut(noteNode);
+
+        return this;
     }
 
-    public NodeRequestBuilder trashNode(String noteId) throws NoIdException, BadNodeTypeException {
-        return updateNode(
-                Node.builder()
-                        .timestamps(Timestamps.builder().trashed(LocalDateTime.now(Timestamps.DEFAULT_ZONE_ID)).build())
-                        .type(NodeType.NOTE)
-                        .id(noteId)
-                        .build()
-        );
+    public NodeRequestBuilder pinNoteNode(NoteNode noteNode) {
+        noteNode.setPinned(true);
+        mergeIfExistsOrPut(noteNode);
+
+        return this;
     }
 
-    public NodeRequestBuilder deleteNode(String noteId) throws NoIdException, BadNodeTypeException {
-        return updateNode(
-                Node.builder()
-                        .timestamps(Timestamps.builder().deleted(LocalDateTime.now(Timestamps.DEFAULT_ZONE_ID)).build())
-                        .type(NodeType.NOTE)
-                        .id(noteId)
-                        .build()
-        );
+    public NodeRequestBuilder unpinNoteNode(NoteNode noteNode) {
+        noteNode.setPinned(false);
+        mergeIfExistsOrPut(noteNode);
+
+        return this;
     }
 
-    public NodeRequestBuilder restoreNode(String noteId) throws NoIdException, BadNodeTypeException {
-        return updateNode(
-                Node.builder()
-                        .timestamps(Timestamps.builder().trashed(Timestamps.DEFAULT_LOCALDATETIME).build())
-                        .type(NodeType.NOTE)
-                        .id(noteId)
-                        .build()
-        );
+    public NodeRequestBuilder archiveNoteNode(NoteNode noteNode) {
+        noteNode.setArchived(true);
+        mergeIfExistsOrPut(noteNode);
+
+        return this;
     }
 
-    public NodeRequestBuilder pinNode(String noteId) throws NoIdException, BadNodeTypeException {
-        return updateNode(
-                Node.builder()
-                        .pinned(true)
-                        .type(NodeType.NOTE)
-                        .id(noteId)
-                        .build()
-        );
+    public NodeRequestBuilder unarchiveNoteNode(NoteNode noteNode) {
+        noteNode.setArchived(false);
+        mergeIfExistsOrPut(noteNode);
+
+        return this;
     }
 
-    public NodeRequestBuilder unpinNode(String noteId) throws NoIdException, BadNodeTypeException {
-        return updateNode(
-                Node.builder()
-                        .pinned(false)
-                        .type(NodeType.NOTE)
-                        .id(noteId)
-                        .build()
-        );
+    public NodeRequestBuilder createListNode(ListNode listNode) {
+        String listId = IdUtils.generateId();
+
+        listNode.setId(listId);
+        idAndNodeMap.put(listId, listNode);
+
+        listNode.getListItemNodes().forEach(n -> {
+            n.setId(IdUtils.generateId());
+            n.setParentId(listId);
+            idAndNodeMap.put(n.getId(), n);
+        });
+        listNode.getBlobNodes().forEach(n -> {
+            n.setId(IdUtils.generateId());
+            n.setParentId(listId);
+            idAndNodeMap.put(n.getId(), n);
+        });
+
+        return this;
     }
 
-    public NodeRequestBuilder archiveNode(String noteId) throws NoIdException, BadNodeTypeException {
-        return updateNode(
-                Node.builder()
-                        .archived(true)
-                        .type(NodeType.NOTE)
-                        .id(noteId)
-                        .build()
-        );
+    public NodeRequestBuilder createOrUpdateListNode(ListNode listNode) {
+        mergeIfExistsOrPut(listNode);
+        listNode.getListItemNodes().forEach(this::mergeIfExistsOrPut);
+        listNode.getBlobNodes().forEach(this::mergeIfExistsOrPut);
+
+        return this;
     }
 
-    public NodeRequestBuilder unarchiveNode(String noteId) throws NoIdException, BadNodeTypeException {
-        return updateNode(
-                Node.builder()
-                        .archived(false)
-                        .type(NodeType.NOTE)
-                        .id(noteId)
-                        .build()
-        );
+    public NodeRequestBuilder addLabelToListNode(ListNode listNode, Label label) {
+        listNode.setLabelIds(List.of(new LabelId(label.getMainId())));
+        mergeIfExistsOrPut(listNode);
+
+        return this;
     }
 
-    public NodeRequestBuilder createLabel(String labelName) throws NoIdException {
-        Label label = Label.withDefaultValues()
-                .mainId(IdUtils.generateId())
-                .name(labelName)
-                .build();
+    public NodeRequestBuilder pinListNode(ListNode listNode) {
+        listNode.setPinned(true);
+        mergeIfExistsOrPut(listNode);
 
-        return createLabel(label);
+        return this;
     }
 
-    public NodeRequestBuilder createLabel(Label label) throws NoIdException {
+    public NodeRequestBuilder unpinListNode(ListNode listNode) {
+        listNode.setPinned(false);
+        mergeIfExistsOrPut(listNode);
+
+        return this;
+    }
+
+    public NodeRequestBuilder archiveListNode(ListNode listNode) {
+        listNode.setArchived(true);
+        mergeIfExistsOrPut(listNode);
+
+        return this;
+    }
+
+    public NodeRequestBuilder unarchiveListNode(ListNode listNode) {
+        listNode.setArchived(false);
+        mergeIfExistsOrPut(listNode);
+
+        return this;
+    }
+
+    public NodeRequestBuilder trashNode(Node node) {
+        node.getTimestamps().setTrashed(LocalDateTime.now(Timestamps.DEFAULT_ZONE_ID));
+
+        mergeIfExistsOrPut(node);
+
+        return this;
+    }
+
+    public NodeRequestBuilder restoreNode(Node node) {
+        node.getTimestamps().setTrashed(Timestamps.DEFAULT_LOCALDATETIME);
+
+        mergeIfExistsOrPut(node);
+
+        return this;
+    }
+
+    public NodeRequestBuilder deleteNode(Node node) {
+        node.getTimestamps().setDeleted(LocalDateTime.now(Timestamps.DEFAULT_ZONE_ID));
+
+        mergeIfExistsOrPut(node);
+
+        return this;
+    }
+
+    public NodeRequestBuilder createLabel(Label label) {
+        label.setMainId(IdUtils.generateId());
+
         return updateLabel(label);
     }
 
-    public NodeRequestBuilder updateLabel(String name, String labelId) throws NoIdException {
-        return updateLabel(
-                Label.withDefaultValues()
-                        .name(name)
-                        .mainId(labelId)
-                        .build()
-        );
-    }
-
-    public NodeRequestBuilder updateLabel(Label label) throws NoIdException {
-        if (label.getMainId() == null || label.getMainId().isEmpty()) {
-            throw new NoIdException("The Label object should contain mainId field");
-        }
-
+    public NodeRequestBuilder updateLabel(Label label) {
         LocalDateTime now = LocalDateTime.now(Timestamps.DEFAULT_ZONE_ID);
 
         // the server returns 500 without adding the created and updated timestamps,
-        // though updating nodes works good without it
+        // though creating and updating nodes works well without it
         label.setTimestamps(
                 Timestamps.builder()
                         .created(now)
@@ -234,42 +202,49 @@ public class NodeRequestBuilder {
                         .build()
         );
 
-        if (idAndLabelMap.containsKey(label.getMainId())) {
-            idAndLabelMap.replace(label.getMainId(), NodeUtils.mergeLabel(idAndLabelMap.get(label.getMainId()), label));
-        } else {
-            idAndLabelMap.put(label.getMainId(), label);
-        }
+        mergeIfExistsOrPut(label);
 
         return this;
     }
 
-    public NodeRequestBuilder deleteLabel(String labelId) throws NoIdException {
-        return updateLabel(
-                Label.builder()
-                        .timestamps(Timestamps.builder().deleted(LocalDateTime.now(Timestamps.DEFAULT_ZONE_ID)).build())
-                        .mainId(labelId)
-                        .build()
-        );
-    }
+    public NodeRequestBuilder deleteLabel(Label label) {
+        label.getTimestamps().setDeleted(LocalDateTime.now(Timestamps.DEFAULT_ZONE_ID));
 
-    public NodeRequestBuilder addLabelToNode(String noteId, String labelId) throws NoIdException, BadNodeTypeException {
-        return updateNode(
-                Node.builder()
-                        .labelIds(List.of(new LabelId(labelId)))
-                        .type(NodeType.NOTE)
-                        .id(noteId)
-                        .build()
-        );
+        return updateLabel(label);
     }
 
     public NodeRequest build() {
         return NodeRequest.withDefaultValues()
-                .nodes(idAndNodeMap.values().stream().sorted().toList())
+                .nodes(idAndNodeMap.values().stream().toList())
                 .userInfo(
                         UserInfo.builder()
                                 .labels(idAndLabelMap.values().stream().toList())
                                 .build()
                 )
                 .build();
+    }
+
+    private void mergeIfExistsOrPut(Node node) {
+        if (node == null) {
+            return;
+        }
+
+        if (idAndNodeMap.containsKey(node.getId())) {
+            idAndNodeMap.replace(node.getId(), NodeUtils.mergeNode(idAndNodeMap.get(node.getId()), node));
+        } else {
+            idAndNodeMap.put(node.getId(), node);
+        }
+    }
+
+    private void mergeIfExistsOrPut(Label label) {
+        if (label == null) {
+            return;
+        }
+
+        if (idAndLabelMap.containsKey(label.getMainId())) {
+            idAndLabelMap.replace(label.getMainId(), NodeUtils.mergeLabel(idAndLabelMap.get(label.getMainId()), label));
+        } else {
+            idAndLabelMap.put(label.getMainId(), label);
+        }
     }
 }
