@@ -187,10 +187,10 @@ public class NodeRequestBuilder {
     public NodeRequestBuilder createLabel(Label label) {
         label.setMainId(IdUtils.generateId());
 
-        return updateLabel(label);
+        return createOrUpdateLabel(label);
     }
 
-    public NodeRequestBuilder updateLabel(Label label) {
+    public NodeRequestBuilder createOrUpdateLabel(Label label) {
         LocalDateTime now = LocalDateTime.now(Timestamps.DEFAULT_ZONE_ID);
 
         // the server returns 500 without adding the created and updated timestamps,
@@ -210,7 +210,7 @@ public class NodeRequestBuilder {
     public NodeRequestBuilder deleteLabel(Label label) {
         label.getTimestamps().setDeleted(LocalDateTime.now(Timestamps.DEFAULT_ZONE_ID));
 
-        return updateLabel(label);
+        return createOrUpdateLabel(label);
     }
 
     public NodeRequest build() {
