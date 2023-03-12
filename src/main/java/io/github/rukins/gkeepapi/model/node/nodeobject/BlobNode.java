@@ -1,7 +1,7 @@
 package io.github.rukins.gkeepapi.model.node.nodeobject;
 
 import io.github.rukins.gkeepapi.model.Timestamps;
-import io.github.rukins.gkeepapi.model.node.Blob;
+import io.github.rukins.gkeepapi.model.node.blob.blobobject.Blob;
 import io.github.rukins.gkeepapi.model.node.NodeType;
 import io.github.rukins.gkeepapi.model.node.annotation.AnnotationsGroup;
 import io.github.rukins.gkeepapi.model.nodesettings.NodeSettings;
