@@ -3,6 +3,7 @@ Unofficial Java client library for the Android Google Keep API
 
 ## Table of content
 - [General info](#general-info)
+- [Next improvements](#next-improvements)
 - [Documentation](#documentation)
 - [Download](#download)
 - [Similar libraries](#similar-libraries)
@@ -75,11 +76,32 @@ public class App {
 }
 ```
 
+## Next improvements
+In the current version of the library, basic manipulations with nodes and labels are available, 
+but later uploading and downloading blobs will be also added.
+
+*You can report any issues with improvements or modifications*
+
 ## Documentation
 *Will be available later*
 
 ## Download
-*Will be available later*
+### *Available [here](https://mvnrepository.com/artifact/io.github.rukins/gkeepapi)*
+#### Maven
+```xml
+<dependency>
+    <groupId>io.github.rukins</groupId>
+    <artifactId>gkeepapi</artifactId>
+</dependency>
+```
+#### Gradle
+```groovy
+implementation group: 'io.github.rukins', name: 'gkeepapi'
+```
+#### Gradle (Kotlin)
+```kotlin
+implementation("io.github.rukins:gkeepapi")
+```
 
 ## Similar libraries
 - Python: https://github.com/kiwiz/gkeepapi
