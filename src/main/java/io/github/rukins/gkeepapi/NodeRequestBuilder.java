@@ -56,8 +56,14 @@ public class NodeRequestBuilder {
 
     public NodeRequestBuilder createOrUpdateNoteNode(NoteNode noteNode) {
         mergeIfExistsOrPut(noteNode);
+
+        noteNode.getListItemNode().setParentId(noteNode.getId());
         mergeIfExistsOrPut(noteNode.getListItemNode());
-        noteNode.getBlobNodes().forEach(this::mergeIfExistsOrPut);
+
+        noteNode.getBlobNodes().forEach(n -> {
+            n.setParentId(noteNode.getId());
+            mergeIfExistsOrPut(n);
+        });
 
         return this;
     }
@@ -119,8 +125,16 @@ public class NodeRequestBuilder {
 
     public NodeRequestBuilder createOrUpdateListNode(ListNode listNode) {
         mergeIfExistsOrPut(listNode);
-        listNode.getListItemNodes().forEach(this::mergeIfExistsOrPut);
-        listNode.getBlobNodes().forEach(this::mergeIfExistsOrPut);
+
+        listNode.getListItemNodes().forEach(n -> {
+            n.setParentId(listNode.getId());
+            mergeIfExistsOrPut(n);
+        });
+
+        listNode.getBlobNodes().forEach(n -> {
+            n.setParentId(listNode.getId());
+            mergeIfExistsOrPut(n);
+        });
 
         return this;
     }
