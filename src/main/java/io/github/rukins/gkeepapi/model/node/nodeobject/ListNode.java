@@ -33,6 +33,10 @@ public class ListNode extends Node {
         setType(NodeType.LIST);
     }
 
+    public static Builder builder() {
+        return new Builder();
+    }
+
     public static class Builder {
         private final ListNode list;
 
