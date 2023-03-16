@@ -229,13 +229,26 @@ public class NodeRequestBuilder {
 
     public NodeRequest build() {
         return NodeRequest.withDefaultValues()
-                .nodes(idAndNodeMap.values().stream().toList())
+                .nodes(getCurrentNodeList())
                 .userInfo(
                         UserInfo.builder()
-                                .labels(idAndLabelMap.values().stream().toList())
+                                .labels(getCurrentLabelList())
                                 .build()
                 )
                 .build();
+    }
+
+    public List<Node> getCurrentNodeList() {
+        return idAndNodeMap.values().stream().toList();
+    }
+
+    public List<Label> getCurrentLabelList() {
+        return idAndLabelMap.values().stream().toList();
+    }
+
+    public void empty() {
+        idAndNodeMap.clear();
+        idAndLabelMap.clear();
     }
 
     private void mergeIfExistsOrPut(Node node) {
