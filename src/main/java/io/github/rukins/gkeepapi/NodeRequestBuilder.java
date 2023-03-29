@@ -3,10 +3,7 @@ package io.github.rukins.gkeepapi;
 import io.github.rukins.gkeepapi.model.NodeRequest;
 import io.github.rukins.gkeepapi.model.Timestamps;
 import io.github.rukins.gkeepapi.model.node.LabelId;
-import io.github.rukins.gkeepapi.model.node.nodeobject.ListItemNode;
-import io.github.rukins.gkeepapi.model.node.nodeobject.ListNode;
-import io.github.rukins.gkeepapi.model.node.nodeobject.Node;
-import io.github.rukins.gkeepapi.model.node.nodeobject.NoteNode;
+import io.github.rukins.gkeepapi.model.node.nodeobject.*;
 import io.github.rukins.gkeepapi.model.userinfo.Label;
 import io.github.rukins.gkeepapi.model.userinfo.UserInfo;
 import io.github.rukins.gkeepapi.utils.IdUtils;
@@ -42,160 +39,151 @@ public class NodeRequestBuilder {
         noteNode.getListItemNode().setId(IdUtils.generateId());
         noteNode.getListItemNode().setParentId(noteId);
 
-        noteNode.getBlobNodes().forEach(n -> {
-            n.setId(IdUtils.generateId());
-            n.setParentId(noteId);
-            idAndNodeMap.put(n.getId(), n);
-        });
+        noteNode.setListItemNode((ListItemNode) mergeIfExistsOrPut(noteNode.getListItemNode()));
 
-        idAndNodeMap.put(noteId, noteNode);
-        idAndNodeMap.put(noteNode.getListItemNode().getId(), noteNode.getListItemNode());
+        noteNode.setBlobNodes(
+                noteNode.getBlobNodes().stream().map(n -> {
+                    n.setId(IdUtils.generateId());
+                    n.setParentId(noteNode.getId());
+                    return (BlobNode) mergeIfExistsOrPut(n);
+                }).toList()
+        );
 
-        return noteNode;
+        return (NoteNode) mergeIfExistsOrPut(noteNode);
     }
 
     public NoteNode createOrUpdateNoteNode(NoteNode noteNode) {
         mergeIfExistsOrPut(noteNode);
 
         noteNode.getListItemNode().setParentId(noteNode.getId());
-        mergeIfExistsOrPut(noteNode.getListItemNode());
+        noteNode.setListItemNode((ListItemNode) mergeIfExistsOrPut(noteNode.getListItemNode()));
 
-        noteNode.getBlobNodes().forEach(n -> {
-            n.setParentId(noteNode.getId());
-            mergeIfExistsOrPut(n);
-        });
+        noteNode.setBlobNodes(
+                noteNode.getBlobNodes().stream().map(n -> {
+                    n.setParentId(noteNode.getId());
+                    return (BlobNode) mergeIfExistsOrPut(n);
+                }).toList()
+        );
 
-        return noteNode;
+        return (NoteNode) mergeIfExistsOrPut(noteNode);
     }
 
     public NoteNode addLabelToNoteNode(NoteNode noteNode, Label label) {
         noteNode.getLabelIds().add(new LabelId(label.getMainId()));
-        mergeIfExistsOrPut(noteNode);
 
-        return noteNode;
+        return (NoteNode) mergeIfExistsOrPut(noteNode);
     }
 
     public NoteNode pinNoteNode(NoteNode noteNode) {
         noteNode.setPinned(true);
-        mergeIfExistsOrPut(noteNode);
 
-        return noteNode;
+        return (NoteNode) mergeIfExistsOrPut(noteNode);
     }
 
     public NoteNode unpinNoteNode(NoteNode noteNode) {
         noteNode.setPinned(false);
-        mergeIfExistsOrPut(noteNode);
 
-        return noteNode;
+        return (NoteNode) mergeIfExistsOrPut(noteNode);
     }
 
     public NoteNode archiveNoteNode(NoteNode noteNode) {
         noteNode.setArchived(true);
-        mergeIfExistsOrPut(noteNode);
 
-        return noteNode;
+        return (NoteNode) mergeIfExistsOrPut(noteNode);
     }
 
     public NoteNode unarchiveNoteNode(NoteNode noteNode) {
         noteNode.setArchived(false);
-        mergeIfExistsOrPut(noteNode);
 
-        return noteNode;
+        return (NoteNode) mergeIfExistsOrPut(noteNode);
     }
 
     public ListNode createListNode(ListNode listNode) {
         String listId = IdUtils.generateId();
 
         listNode.setId(listId);
-        idAndNodeMap.put(listId, listNode);
 
-        listNode.getListItemNodes().forEach(n -> {
-            n.setId(IdUtils.generateId());
-            n.setParentId(listId);
-            idAndNodeMap.put(n.getId(), n);
-        });
-        listNode.getBlobNodes().forEach(n -> {
-            n.setId(IdUtils.generateId());
-            n.setParentId(listId);
-            idAndNodeMap.put(n.getId(), n);
-        });
+        listNode.setListItemNodes(
+                listNode.getListItemNodes().stream().map(n -> {
+                    n.setId(IdUtils.generateId());
+                    n.setParentId(listNode.getId());
+                    return (ListItemNode) mergeIfExistsOrPut(n);
+                }).toList()
+        );
+        listNode.setBlobNodes(
+                listNode.getBlobNodes().stream().map(n -> {
+                    n.setId(IdUtils.generateId());
+                    n.setParentId(listNode.getId());
+                    return (BlobNode) mergeIfExistsOrPut(n);
+                }).toList()
+        );
 
-        return listNode;
+        return (ListNode) mergeIfExistsOrPut(listNode);
     }
 
     public ListNode createOrUpdateListNode(ListNode listNode) {
-        mergeIfExistsOrPut(listNode);
+        listNode.setListItemNodes(
+                listNode.getListItemNodes().stream().map(n -> {
+                    n.setParentId(listNode.getId());
+                    return (ListItemNode) mergeIfExistsOrPut(n);
+                }).toList()
+        );
+        listNode.setBlobNodes(
+                listNode.getBlobNodes().stream().map(n -> {
+                    n.setParentId(listNode.getId());
+                    return (BlobNode) mergeIfExistsOrPut(n);
+                }).toList()
+        );
 
-        listNode.getListItemNodes().forEach(n -> {
-            n.setParentId(listNode.getId());
-            mergeIfExistsOrPut(n);
-        });
-
-        listNode.getBlobNodes().forEach(n -> {
-            n.setParentId(listNode.getId());
-            mergeIfExistsOrPut(n);
-        });
-
-        return listNode;
+        return (ListNode) mergeIfExistsOrPut(listNode);
     }
 
     public ListNode addLabelToListNode(ListNode listNode, Label label) {
         listNode.getLabelIds().add(new LabelId(label.getMainId()));
-        mergeIfExistsOrPut(listNode);
 
-        return listNode;
+        return (ListNode) mergeIfExistsOrPut(listNode);
     }
 
     public ListNode pinListNode(ListNode listNode) {
         listNode.setPinned(true);
-        mergeIfExistsOrPut(listNode);
 
-        return listNode;
+        return (ListNode) mergeIfExistsOrPut(listNode);
     }
 
     public ListNode unpinListNode(ListNode listNode) {
         listNode.setPinned(false);
-        mergeIfExistsOrPut(listNode);
 
-        return listNode;
+        return (ListNode) mergeIfExistsOrPut(listNode);
     }
 
     public ListNode archiveListNode(ListNode listNode) {
         listNode.setArchived(true);
-        mergeIfExistsOrPut(listNode);
 
-        return listNode;
+        return (ListNode) mergeIfExistsOrPut(listNode);
     }
 
     public ListNode unarchiveListNode(ListNode listNode) {
         listNode.setArchived(false);
-        mergeIfExistsOrPut(listNode);
 
-        return listNode;
+        return (ListNode) mergeIfExistsOrPut(listNode);
     }
 
     public Node trashNode(Node node) {
         node.getTimestamps().setTrashed(LocalDateTime.now(Timestamps.DEFAULT_ZONE_ID));
 
-        mergeIfExistsOrPut(node);
-
-        return node;
+        return mergeIfExistsOrPut(node);
     }
 
     public Node restoreNode(Node node) {
         node.getTimestamps().setTrashed(Timestamps.DEFAULT_LOCALDATETIME);
 
-        mergeIfExistsOrPut(node);
-
-        return node;
+        return mergeIfExistsOrPut(node);
     }
 
     public Node deleteNode(Node node) {
         node.getTimestamps().setDeleted(LocalDateTime.now(Timestamps.DEFAULT_ZONE_ID));
 
-        mergeIfExistsOrPut(node);
-
-        return node;
+        return mergeIfExistsOrPut(node);
     }
 
     public Label createLabel(Label label) {
@@ -216,9 +204,7 @@ public class NodeRequestBuilder {
                         .build()
         );
 
-        mergeIfExistsOrPut(label);
-
-        return label;
+        return mergeIfExistsOrPut(label);
     }
 
     public Label deleteLabel(Label label) {
@@ -251,9 +237,9 @@ public class NodeRequestBuilder {
         idAndLabelMap.clear();
     }
 
-    private void mergeIfExistsOrPut(Node node) {
+    private Node mergeIfExistsOrPut(Node node) {
         if (node == null) {
-            return;
+            return null;
         }
 
         if (idAndNodeMap.containsKey(node.getId())) {
@@ -261,11 +247,13 @@ public class NodeRequestBuilder {
         } else {
             idAndNodeMap.put(node.getId(), node);
         }
+
+        return idAndNodeMap.get(node.getId());
     }
 
-    private void mergeIfExistsOrPut(Label label) {
+    private Label mergeIfExistsOrPut(Label label) {
         if (label == null) {
-            return;
+            return null;
         }
 
         if (idAndLabelMap.containsKey(label.getMainId())) {
@@ -273,5 +261,7 @@ public class NodeRequestBuilder {
         } else {
             idAndLabelMap.put(label.getMainId(), label);
         }
+
+        return idAndLabelMap.get(label.getMainId());
     }
 }
