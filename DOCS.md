@@ -139,38 +139,39 @@ public class Main {
   public static void main(String[] args) {
     GKeepAPI gKeepAPI = new GKeepAPI("aas_et/***", "current_version");
 
-    NoteNode noteNode = NoteNode.builder()
-            .id(IdUtils.generateId())
-            .title("some note")
-            .listItemNode(
-                    ListItemNode.builder()
-                            .id(IdUtils.generateId())
-                            .text("some text")
-                            .build()
-            )
-            .build();
-
-    ListNode listNode = ListNode.builder()
-            .title("some list")
-            .listItemNodes(
-                    List.of(
+    NodeRequestBuilder nodeRequestBuilder = NodeRequestBuilder.builder();
+            
+    NoteNode noteNode = nodeRequestBuilder.createOrUpdateNoteNode(
+            NoteNode.builder()
+                    .id(IdUtils.generateId())
+                    .title("some note")
+                    .listItemNode(
                             ListItemNode.builder()
-                                    .text("unchecked")
-                                    .build(),
-                            ListItemNode.builder()
-                                    .text("checked")
-                                    .checked(true)
+                                    .id(IdUtils.generateId())
+                                    .text("some text")
                                     .build()
                     )
-            )
-            .build();
+                    .build()
+    );
 
-    NodeRequest nodeRequest = NodeRequestBuilder.builder()
-            .createOrUpdateNoteNode(noteNode)
-            .createListNode(listNode)
-            .build();
+    ListNode listNode = nodeRequestBuilder.createListNode(
+            ListNode.builder()
+                    .title("some list")
+                    .listItemNodes(
+                            List.of(
+                                    ListItemNode.builder()
+                                            .text("unchecked")
+                                            .build(),
+                                    ListItemNode.builder()
+                                            .text("checked")
+                                            .checked(true)
+                                            .build()
+                            )
+                    )
+                    .build()
+    );
 
-    NodeResponse nodeResponse = gKeepAPI.changes(nodeRequest);
+    NodeResponse nodeResponse = gKeepAPI.changes(nodeRequestBuilder.build());
   }
 }
 ```
@@ -198,43 +199,44 @@ public class Main {
   public static void main(String[] args) {
     GKeepAPI gKeepAPI = new GKeepAPI("aas_et/***", "current_version");
 
-    NoteNode noteNode = NoteNode.builder()
-            .id("noteNodeId")
-            .title("new title")
-            .archived(true)
-            .listItemNode(
-                    ListItemNode.builder()
-                            .id("listItemId1")
-                            .text("new text")
-                            .build()
-            )
-            .build();
-
-    ListNode listNode = ListNode.builder()
-            .id("listId")
-            .title("new title")
-            .color(Color.RED)
-            .listItemNodes(
-                    List.of(
+    NodeRequestBuilder nodeRequestBuilder = NodeRequestBuilder.builder();
+    
+    NoteNode noteNode = nodeRequestBuilder.createOrUpdateNoteNode(
+            NoteNode.builder()
+                    .id("noteNodeId")
+                    .title("new title")
+                    .archived(true)
+                    .listItemNode(
                             ListItemNode.builder()
-                                    .id("listItemId2")
-                                    .text("unchecked")
-                                    .build(),
-                            ListItemNode.builder()
-                                    .id("listItemId3")
-                                    .text("checked")
-                                    .checked(true)
+                                    .id("listItemId1")
+                                    .text("new text")
                                     .build()
                     )
-            )
-            .build();
+                    .build()
+    );
 
-    NodeRequest nodeRequest = NodeRequestBuilder.builder()
-            .createOrUpdateNoteNode(noteNode)
-            .createOrUpdateListNode(listNode)
-            .build();
+    ListNode listNode = nodeRequestBuilder.createOrUpdateListNode(
+            ListNode.builder()
+                    .id("listId")
+                    .title("new title")
+                    .color(Color.RED)
+                    .listItemNodes(
+                            List.of(
+                                    ListItemNode.builder()
+                                            .id("listItemId2")
+                                            .text("unchecked")
+                                            .build(),
+                                    ListItemNode.builder()
+                                            .id("listItemId3")
+                                            .text("checked")
+                                            .checked(true)
+                                            .build()
+                            )
+                    )
+                    .build()
+    );
 
-    NodeResponse nodeResponse = gKeepAPI.changes(nodeRequest);
+    NodeResponse nodeResponse = gKeepAPI.changes(nodeRequestBuilder.build());
   }
 }
 ```
@@ -257,24 +259,27 @@ public class Main {
   public static void main(String[] args) {
     GKeepAPI gKeepAPI = new GKeepAPI("aas_et/***", "current_version");
 
-    NoteNode noteNode = NoteNode.builder()
-            .id("noteNodeId")
-            .build();
-
-    ListNode listNode = ListNode.builder()
-            .id("listId")
-            .build();
+    NodeRequestBuilder nodeRequestBuilder = NodeRequestBuilder.builder();
 
     Label label = Label.builder()
             .mainId("some_id_of_existing_label")
             .build();
+    
+    NoteNode noteNode = nodeRequestBuilder.addLabelToNoteNode(
+            NoteNode.builder()
+                    .id("noteNodeId")
+                    .build(),
+            label
+    );
 
-    NodeRequest nodeRequest = NodeRequestBuilder.builder()
-            .addLabelToNoteNode(noteNode, label)
-            .addLabelToListNode(listNode, label)
-            .build();
+    ListNode listNode = nodeRequestBuilder.addLabelToListNode(
+            ListNode.builder()
+                    .id("listId")
+                    .build(),
+            label
+    );
 
-    NodeResponse nodeResponse = gKeepAPI.changes(nodeRequest);
+    NodeResponse nodeResponse = gKeepAPI.changes(nodeRequestBuilder.build());
   }
 }
 ```
@@ -297,20 +302,21 @@ public class Main {
   public static void main(String[] args) {
     GKeepAPI gKeepAPI = new GKeepAPI("aas_et/***", "current_version");
 
-    NoteNode noteNode = NoteNode.builder()
-            .id("noteNodeId")
-            .build();
+    NodeRequestBuilder nodeRequestBuilder = NodeRequestBuilder.builder();
 
-    ListNode listNode = ListNode.builder()
-            .id("listId")
-            .build();
+    NoteNode noteNode = (NoteNode) nodeRequestBuilder.deleteNode(
+            NoteNode.builder()
+                    .id("noteNodeId")
+                    .build()
+    );
 
-    NodeRequest nodeRequest = NodeRequestBuilder.builder()
-            .deleteNode(noteNode)
-            .trashNode(listNode)
-            .build();
+    ListNode listNode = (ListNode) nodeRequestBuilder.trashNode(
+            ListNode.builder()
+                    .id("listId")
+                    .build()
+    );
 
-    NodeResponse nodeResponse = gKeepAPI.changes(nodeRequest);
+    NodeResponse nodeResponse = gKeepAPI.changes(nodeRequestBuilder.build());
   }
 }
 ```
@@ -336,20 +342,21 @@ public class Main {
   public static void main(String[] args) {
     GKeepAPI gKeepAPI = new GKeepAPI("aas_et/***", "current_version");
 
-    NoteNode noteNode = NoteNode.builder()
-            .id("noteNodeId")
-            .build();
+    NodeRequestBuilder nodeRequestBuilder = NodeRequestBuilder.builder();
+    
+    NoteNode noteNode = nodeRequestBuilder.pinNoteNode(
+            NoteNode.builder()
+                    .id("noteNodeId")
+                    .build()
+    );
 
-    ListNode listNode = ListNode.builder()
-            .id("listId")
-            .build();
+    ListNode listNode = nodeRequestBuilder.archiveListNode(
+            ListNode.builder()
+                    .id("listId")
+                    .build()
+    );
 
-    NodeRequest nodeRequest = NodeRequestBuilder.builder()
-            .pinNoteNode(noteNode)
-            .archiveListNode(listNode)
-            .build();
-
-    NodeResponse nodeResponse = gKeepAPI.changes(nodeRequest);
+    NodeResponse nodeResponse = gKeepAPI.changes(nodeRequestBuilder.build());
   }
 }
 ```
@@ -377,15 +384,15 @@ public class Main {
   public static void main(String[] args) {
     GKeepAPI gKeepAPI = new GKeepAPI("aas_et/***", "current_version");
 
-    Label label = Label.builder()
-            .name("some label")
-            .build();
+    NodeRequestBuilder nodeRequestBuilder = NodeRequestBuilder.builder();
+    
+    Label label = nodeRequestBuilder.createLabel(
+            Label.builder()
+                    .name("some label")
+                    .build()
+    );
 
-    NodeRequest nodeRequest = NodeRequestBuilder.builder()
-            .createLabel(label)
-            .build();
-
-    NodeResponse nodeResponse = gKeepAPI.changes(nodeRequest);
+    NodeResponse nodeResponse = gKeepAPI.changes(nodeRequestBuilder.build());
   }
 }
 ```
@@ -406,16 +413,16 @@ public class Main {
   public static void main(String[] args) {
     GKeepAPI gKeepAPI = new GKeepAPI("aas_et/***", "current_version");
 
-    Label label = Label.builder()
-            .mainId("label_id")
-            .name("new name")
-            .build();
+    NodeRequestBuilder nodeRequestBuilder = NodeRequestBuilder.builder();
+    
+    Label label = nodeRequestBuilder.createOrUpdateLabel(
+            Label.builder()
+                    .mainId("label_id")
+                    .name("new name")
+                    .build()
+    );
 
-    NodeRequest nodeRequest = NodeRequestBuilder.builder()
-            .createOrUpdateLabel(label)
-            .build();
-
-    NodeResponse nodeResponse = gKeepAPI.changes(nodeRequest);
+    NodeResponse nodeResponse = gKeepAPI.changes(nodeRequestBuilder.build());
   }
 }
 ```
@@ -436,15 +443,15 @@ public class Main {
   public static void main(String[] args) {
     GKeepAPI gKeepAPI = new GKeepAPI("aas_et/***", "current_version");
 
-    Label label = Label.builder()
-            .mainId("label_id")
-            .build();
+    NodeRequestBuilder nodeRequestBuilder = NodeRequestBuilder.builder();
+    
+    Label label = nodeRequestBuilder.deleteLabel(
+            Label.builder()
+                    .mainId("label_id")
+                    .build()
+    );
 
-    NodeRequest nodeRequest = NodeRequestBuilder.builder()
-            .deleteLabel(label)
-            .build();
-
-    NodeResponse nodeResponse = gKeepAPI.changes(nodeRequest);
+    NodeResponse nodeResponse = gKeepAPI.changes(nodeRequestBuilder.build());
   }
 }
 ```
