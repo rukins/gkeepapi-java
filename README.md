@@ -34,37 +34,38 @@ public class App {
 
         NodeResponse fullData = gKeepAPI.getFullData();
 
-        NoteNode noteNode = NoteNode.builder()
-                .id(IdUtils.generateId())
-                .title("some title")
-                .listItemNode(
-                        ListItemNode.builder()
-                                .id(IdUtils.generateId())
-                                .text("some text")
-                                .build()
-                )
-                .build();
+        NodeRequestBuilder nodeRequestBuilder = NodeRequestBuilder.builder();
 
-        Label label = Label.builder()
-                .mainId(IdUtils.generateId())
-                .name("some label")
-                .build();
+        NoteNode noteNode = nodeRequestBuilder.createNoteNode(
+                NoteNode.builder()
+                        .title("some title")
+                        .listItemNode(
+                                ListItemNode.builder()
+                                        .text("some text")
+                                        .build()
+                        )
+                        .build()
+        );
 
-        NodeRequest nodeRequest = NodeRequestBuilder.builder()
-                .createOrUpdateNoteNode(noteNode)
-                .createLabel(label)
-                .addLabelToNoteNode(noteNode, label)
-                .pinNoteNode(noteNode)
-                .createOrUpdateNoteNode(
-                        NoteNode.builder()
-                                .id(noteNode.getId())
-                                .color(Color.RED)
-                                .title("new title")
-                                .build()
-                )
-                .build();
+        Label label = nodeRequestBuilder.createOrUpdateLabel(
+                Label.builder()
+                        .mainId(IdUtils.generateId())
+                        .name("some label")
+                        .build()
+        );
 
-        NodeResponse nodeResponse = gKeepAPI.changes(nodeRequest);
+        noteNode = nodeRequestBuilder.addLabelToNoteNode(noteNode, label);
+        noteNode = nodeRequestBuilder.pinNoteNode(noteNode);
+        
+        noteNode.setColor(Color.RED);
+        noteNode.setTitle("new title");
+        noteNode.getListItemNode().setText("new text");
+        
+        noteNode = nodeRequestBuilder.createOrUpdateNoteNode(noteNode);
+        
+        System.out.println(noteNode);
+
+        NodeResponse nodeResponse = gKeepAPI.changes(nodeRequestBuilder.build());
 
         NodeResponse newState = NodeUtils.mergeNodeResponse(fullData, nodeResponse);
 
