@@ -27,7 +27,7 @@ public class NodeRequestBuilder {
         return new NodeRequestBuilder();
     }
 
-    public NodeRequestBuilder createNoteNode(NoteNode noteNode) {
+    public NoteNode createNoteNode(NoteNode noteNode) {
         String noteId = IdUtils.generateId();
 
         noteNode.setId(noteId);
@@ -51,10 +51,10 @@ public class NodeRequestBuilder {
         idAndNodeMap.put(noteId, noteNode);
         idAndNodeMap.put(noteNode.getListItemNode().getId(), noteNode.getListItemNode());
 
-        return this;
+        return noteNode;
     }
 
-    public NodeRequestBuilder createOrUpdateNoteNode(NoteNode noteNode) {
+    public NoteNode createOrUpdateNoteNode(NoteNode noteNode) {
         mergeIfExistsOrPut(noteNode);
 
         noteNode.getListItemNode().setParentId(noteNode.getId());
@@ -65,45 +65,45 @@ public class NodeRequestBuilder {
             mergeIfExistsOrPut(n);
         });
 
-        return this;
+        return noteNode;
     }
 
-    public NodeRequestBuilder addLabelToNoteNode(NoteNode noteNode, Label label) {
+    public NoteNode addLabelToNoteNode(NoteNode noteNode, Label label) {
         noteNode.setLabelIds(List.of(new LabelId(label.getMainId())));
         mergeIfExistsOrPut(noteNode);
 
-        return this;
+        return noteNode;
     }
 
-    public NodeRequestBuilder pinNoteNode(NoteNode noteNode) {
+    public NoteNode pinNoteNode(NoteNode noteNode) {
         noteNode.setPinned(true);
         mergeIfExistsOrPut(noteNode);
 
-        return this;
+        return noteNode;
     }
 
-    public NodeRequestBuilder unpinNoteNode(NoteNode noteNode) {
+    public NoteNode unpinNoteNode(NoteNode noteNode) {
         noteNode.setPinned(false);
         mergeIfExistsOrPut(noteNode);
 
-        return this;
+        return noteNode;
     }
 
-    public NodeRequestBuilder archiveNoteNode(NoteNode noteNode) {
+    public NoteNode archiveNoteNode(NoteNode noteNode) {
         noteNode.setArchived(true);
         mergeIfExistsOrPut(noteNode);
 
-        return this;
+        return noteNode;
     }
 
-    public NodeRequestBuilder unarchiveNoteNode(NoteNode noteNode) {
+    public NoteNode unarchiveNoteNode(NoteNode noteNode) {
         noteNode.setArchived(false);
         mergeIfExistsOrPut(noteNode);
 
-        return this;
+        return noteNode;
     }
 
-    public NodeRequestBuilder createListNode(ListNode listNode) {
+    public ListNode createListNode(ListNode listNode) {
         String listId = IdUtils.generateId();
 
         listNode.setId(listId);
@@ -120,10 +120,10 @@ public class NodeRequestBuilder {
             idAndNodeMap.put(n.getId(), n);
         });
 
-        return this;
+        return listNode;
     }
 
-    public NodeRequestBuilder createOrUpdateListNode(ListNode listNode) {
+    public ListNode createOrUpdateListNode(ListNode listNode) {
         mergeIfExistsOrPut(listNode);
 
         listNode.getListItemNodes().forEach(n -> {
@@ -136,75 +136,75 @@ public class NodeRequestBuilder {
             mergeIfExistsOrPut(n);
         });
 
-        return this;
+        return listNode;
     }
 
-    public NodeRequestBuilder addLabelToListNode(ListNode listNode, Label label) {
+    public ListNode addLabelToListNode(ListNode listNode, Label label) {
         listNode.setLabelIds(List.of(new LabelId(label.getMainId())));
         mergeIfExistsOrPut(listNode);
 
-        return this;
+        return listNode;
     }
 
-    public NodeRequestBuilder pinListNode(ListNode listNode) {
+    public ListNode pinListNode(ListNode listNode) {
         listNode.setPinned(true);
         mergeIfExistsOrPut(listNode);
 
-        return this;
+        return listNode;
     }
 
-    public NodeRequestBuilder unpinListNode(ListNode listNode) {
+    public ListNode unpinListNode(ListNode listNode) {
         listNode.setPinned(false);
         mergeIfExistsOrPut(listNode);
 
-        return this;
+        return listNode;
     }
 
-    public NodeRequestBuilder archiveListNode(ListNode listNode) {
+    public ListNode archiveListNode(ListNode listNode) {
         listNode.setArchived(true);
         mergeIfExistsOrPut(listNode);
 
-        return this;
+        return listNode;
     }
 
-    public NodeRequestBuilder unarchiveListNode(ListNode listNode) {
+    public ListNode unarchiveListNode(ListNode listNode) {
         listNode.setArchived(false);
         mergeIfExistsOrPut(listNode);
 
-        return this;
+        return listNode;
     }
 
-    public NodeRequestBuilder trashNode(Node node) {
+    public Node trashNode(Node node) {
         node.getTimestamps().setTrashed(LocalDateTime.now(Timestamps.DEFAULT_ZONE_ID));
 
         mergeIfExistsOrPut(node);
 
-        return this;
+        return node;
     }
 
-    public NodeRequestBuilder restoreNode(Node node) {
+    public Node restoreNode(Node node) {
         node.getTimestamps().setTrashed(Timestamps.DEFAULT_LOCALDATETIME);
 
         mergeIfExistsOrPut(node);
 
-        return this;
+        return node;
     }
 
-    public NodeRequestBuilder deleteNode(Node node) {
+    public Node deleteNode(Node node) {
         node.getTimestamps().setDeleted(LocalDateTime.now(Timestamps.DEFAULT_ZONE_ID));
 
         mergeIfExistsOrPut(node);
 
-        return this;
+        return node;
     }
 
-    public NodeRequestBuilder createLabel(Label label) {
+    public Label createLabel(Label label) {
         label.setMainId(IdUtils.generateId());
 
         return createOrUpdateLabel(label);
     }
 
-    public NodeRequestBuilder createOrUpdateLabel(Label label) {
+    public Label createOrUpdateLabel(Label label) {
         LocalDateTime now = LocalDateTime.now(Timestamps.DEFAULT_ZONE_ID);
 
         // the server returns 500 without adding the created and updated timestamps,
@@ -218,10 +218,10 @@ public class NodeRequestBuilder {
 
         mergeIfExistsOrPut(label);
 
-        return this;
+        return label;
     }
 
-    public NodeRequestBuilder deleteLabel(Label label) {
+    public Label deleteLabel(Label label) {
         label.getTimestamps().setDeleted(LocalDateTime.now(Timestamps.DEFAULT_ZONE_ID));
 
         return createOrUpdateLabel(label);
