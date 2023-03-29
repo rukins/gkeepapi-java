@@ -69,7 +69,7 @@ public class NodeRequestBuilder {
     }
 
     public NoteNode addLabelToNoteNode(NoteNode noteNode, Label label) {
-        noteNode.setLabelIds(List.of(new LabelId(label.getMainId())));
+        noteNode.getLabelIds().add(new LabelId(label.getMainId()));
         mergeIfExistsOrPut(noteNode);
 
         return noteNode;
@@ -140,7 +140,7 @@ public class NodeRequestBuilder {
     }
 
     public ListNode addLabelToListNode(ListNode listNode, Label label) {
-        listNode.setLabelIds(List.of(new LabelId(label.getMainId())));
+        listNode.getLabelIds().add(new LabelId(label.getMainId()));
         mergeIfExistsOrPut(listNode);
 
         return listNode;

@@ -22,7 +22,7 @@ public class NoteNode extends Node {
     private String shareState;
     private String moved;
     private Boolean xplatModel;
-    private List<LabelId> labelIds;
+    private List<LabelId> labelIds = new ArrayList<>();
     private Background background;
     @Exclude
     private ListItemNode listItemNode;
