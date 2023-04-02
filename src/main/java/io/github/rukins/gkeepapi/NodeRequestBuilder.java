@@ -1,11 +1,11 @@
 package io.github.rukins.gkeepapi;
 
-import io.github.rukins.gkeepapi.model.NodeRequest;
-import io.github.rukins.gkeepapi.model.Timestamps;
-import io.github.rukins.gkeepapi.model.node.LabelId;
-import io.github.rukins.gkeepapi.model.node.nodeobject.*;
-import io.github.rukins.gkeepapi.model.userinfo.Label;
-import io.github.rukins.gkeepapi.model.userinfo.UserInfo;
+import io.github.rukins.gkeepapi.model.gkeep.NodeRequest;
+import io.github.rukins.gkeepapi.model.gkeep.Timestamps;
+import io.github.rukins.gkeepapi.model.gkeep.node.LabelId;
+import io.github.rukins.gkeepapi.model.gkeep.node.nodeobject.*;
+import io.github.rukins.gkeepapi.model.gkeep.userinfo.Label;
+import io.github.rukins.gkeepapi.model.gkeep.userinfo.UserInfo;
 import io.github.rukins.gkeepapi.utils.IdUtils;
 import io.github.rukins.gkeepapi.utils.NodeUtils;
 

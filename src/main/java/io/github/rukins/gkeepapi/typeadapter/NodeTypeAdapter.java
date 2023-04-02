@@ -1,8 +1,8 @@
 package io.github.rukins.gkeepapi.typeadapter;
 
 import com.google.gson.*;
-import io.github.rukins.gkeepapi.model.node.nodeobject.*;
-import io.github.rukins.gkeepapi.model.node.*;
+import io.github.rukins.gkeepapi.model.gkeep.node.NodeType;
+import io.github.rukins.gkeepapi.model.gkeep.node.nodeobject.*;
 
 import java.lang.reflect.Type;
 

@@ -1,10 +1,10 @@
 package io.github.rukins.gkeepapi.typeadapter;
 
 import com.google.gson.*;
-import io.github.rukins.gkeepapi.model.node.blob.BlobType;
-import io.github.rukins.gkeepapi.model.node.blob.blobobject.Blob;
-import io.github.rukins.gkeepapi.model.node.blob.blobobject.DrawingBlob;
-import io.github.rukins.gkeepapi.model.node.blob.blobobject.ImageBlob;
+import io.github.rukins.gkeepapi.model.gkeep.node.blob.BlobType;
+import io.github.rukins.gkeepapi.model.gkeep.node.blob.blobobject.Blob;
+import io.github.rukins.gkeepapi.model.gkeep.node.blob.blobobject.DrawingBlob;
+import io.github.rukins.gkeepapi.model.gkeep.node.blob.blobobject.ImageBlob;
 
 import java.lang.reflect.Type;
 

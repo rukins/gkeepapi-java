@@ -3,8 +3,8 @@ package io.github.rukins.gkeepapi.client;
 import feign.Headers;
 import feign.Param;
 import feign.RequestLine;
-import io.github.rukins.gkeepapi.model.NodeRequest;
-import io.github.rukins.gkeepapi.model.NodeResponse;
+import io.github.rukins.gkeepapi.model.gkeep.NodeRequest;
+import io.github.rukins.gkeepapi.model.gkeep.NodeResponse;
 
 public interface GKeepClient {
     @RequestLine("POST /notes/v1/changes")

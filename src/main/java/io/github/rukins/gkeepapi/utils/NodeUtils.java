@@ -1,10 +1,10 @@
 package io.github.rukins.gkeepapi.utils;
 
-import io.github.rukins.gkeepapi.model.NodeResponse;
-import io.github.rukins.gkeepapi.model.node.NodeType;
-import io.github.rukins.gkeepapi.model.node.nodeobject.*;
-import io.github.rukins.gkeepapi.model.userinfo.Label;
-import io.github.rukins.gkeepapi.model.userinfo.UserInfo;
+import io.github.rukins.gkeepapi.model.gkeep.NodeResponse;
+import io.github.rukins.gkeepapi.model.gkeep.node.NodeType;
+import io.github.rukins.gkeepapi.model.gkeep.node.nodeobject.*;
+import io.github.rukins.gkeepapi.model.gkeep.userinfo.Label;
+import io.github.rukins.gkeepapi.model.gkeep.userinfo.UserInfo;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

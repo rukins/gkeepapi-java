@@ -1,10 +1,10 @@
 package io.github.rukins.gkeepapi;
 
 import io.github.rukins.gkeepapi.client.GKeepClientWrapper;
-import io.github.rukins.gkeepapi.model.node.nodeobject.Node;
-import io.github.rukins.gkeepapi.model.NodeRequest;
-import io.github.rukins.gkeepapi.model.NodeResponse;
-import io.github.rukins.gkeepapi.model.userinfo.UserInfo;
+import io.github.rukins.gkeepapi.model.gkeep.NodeRequest;
+import io.github.rukins.gkeepapi.model.gkeep.NodeResponse;
+import io.github.rukins.gkeepapi.model.gkeep.node.nodeobject.Node;
+import io.github.rukins.gkeepapi.model.gkeep.userinfo.UserInfo;
 import io.github.rukins.gkeepapi.utils.NodeUtils;
 import io.github.rukins.gpsoauth.exception.AuthError;
 
