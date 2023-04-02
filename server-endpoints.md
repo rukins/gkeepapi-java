@@ -521,16 +521,22 @@ POST https://notes-pa.googleapis.com/upload/notes/v1/media/{serverId-of-blob}
 {}
 ```
 
-*Returns:* **empty body**
-and `Location` header where to upload the image
+*Returns:* **empty body**, `Location` header where to upload the image and `X-GUploader-UploadID` header with upload id
 
 ### Fourth request
-*see uri in the `Location` header of previous request*
 ```http request
-PUT https://notes-pa.googleapis.com/upload/notes/v1/media/
+PUT https://notes-pa.googleapis.com/upload/notes/v1/media/{serverId-of-blob}
 ```
 
-*Body:* **image in the `HEX` format**
+*with parameters:*
+
+- `noteId` - *serverId of the note a blob corresponds to*
+- `uploadType` - **resumable**
+- `upload_id` - *upload id*
+
+*or see uri in the `Location` header of previous request*
+
+*Body:* **image**
 
 *Returns:* 
 ```json
@@ -907,19 +913,17 @@ GET https://keep.google.com/media/v2/{serverId-of-note}/{serverId-of-blob}
 
 *with parameters:*
 
-- `sz` - **2148**
-- `accept` - **audio/3gpp,audio/amr-wb,image/gif,image/jpg,image/jpeg,image/png**
+- `sz` - **2148** *optional*
+- `accept` - **audio/3gpp,audio/amr-wb,image/gif,image/jpg,image/jpeg,image/png** *optional*
 
 *Body:* **empty body**
 
-*Returns:* 
-**302 FOUND**
-and `Location` header where to get the image
+*Returns:* **302 FOUND** and `Location` header where to get the image
 
 ### Firth request
-*see uri in the `Location` header of previous request*
 ```http request
 GET https://lh3.googleusercontent.com/keep-bbsk/
 ```
+*see uri in the `Location` header of previous request*
 
-*Returns:* **image in the `HEX` format**
+*Returns:* **image**
