@@ -2,6 +2,7 @@ package io.github.rukins.gkeepapi.model.gkeep.node.blob.blobobject;
 
 import io.github.rukins.gkeepapi.model.gkeep.node.blob.DrawingInfo;
 import io.github.rukins.gkeepapi.model.gkeep.node.blob.BlobType;
+import io.github.rukins.gkeepapi.model.gkeep.node.blob.ExtractionStatus;
 
 import java.util.Objects;
 
@@ -28,7 +29,7 @@ public class DrawingBlob extends Blob {
             return this;
         }
 
-        public Builder extractionStatus(String extractionStatus) {
+        public Builder extractionStatus(ExtractionStatus extractionStatus) {
             drawingBlob.setExtractionStatus(extractionStatus);
             return this;
         }

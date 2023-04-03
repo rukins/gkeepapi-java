@@ -2,6 +2,7 @@ package io.github.rukins.gkeepapi.model.gkeep.node.blob.blobobject;
 
 import com.google.gson.annotations.SerializedName;
 import io.github.rukins.gkeepapi.model.gkeep.node.blob.BlobType;
+import io.github.rukins.gkeepapi.model.gkeep.node.blob.ExtractionStatus;
 
 import java.util.Objects;
 
@@ -10,7 +11,7 @@ public abstract class Blob {
     @SerializedName("extracted_text")
     private String extractedText;
     @SerializedName("extraction_status")
-    private String extractionStatus;
+    private ExtractionStatus extractionStatus;
     private BlobType type;
 
     public String getKind() {
@@ -25,11 +26,11 @@ public abstract class Blob {
         this.extractedText = extractedText;
     }
 
-    public String getExtractionStatus() {
+    public ExtractionStatus getExtractionStatus() {
         return extractionStatus;
     }
 
-    public void setExtractionStatus(String extractionStatus) {
+    public void setExtractionStatus(ExtractionStatus extractionStatus) {
         this.extractionStatus = extractionStatus;
     }
 

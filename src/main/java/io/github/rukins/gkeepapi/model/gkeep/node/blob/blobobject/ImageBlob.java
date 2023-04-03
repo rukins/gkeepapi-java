@@ -2,6 +2,7 @@ package io.github.rukins.gkeepapi.model.gkeep.node.blob.blobobject;
 
 import com.google.gson.annotations.SerializedName;
 import io.github.rukins.gkeepapi.model.gkeep.node.blob.BlobType;
+import io.github.rukins.gkeepapi.model.gkeep.node.blob.ExtractionStatus;
 import io.github.rukins.gkeepapi.model.gkeep.node.blob.MimeType;
 
 import java.util.Objects;
@@ -35,7 +36,7 @@ public class ImageBlob extends Blob {
             return this;
         }
 
-        public Builder extractionStatus(String extractionStatus) {
+        public Builder extractionStatus(ExtractionStatus extractionStatus) {
             imageBlob.setExtractionStatus(extractionStatus);
             return this;
         }
