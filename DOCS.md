@@ -11,7 +11,9 @@
     - [Adding label](#node-adding-label)
     - [Trashing, restoring, deleting](#node-trashing-restoring-deleting)
     - [Pinning and archiving](#node-pinning-archiving)
-- [Media (Blobs)](#blobs) - *not available for now*
+- [Media (Blobs)](#blobs)
+    - [Uploading image](#uploading-image)
+    - [Pulling image from the server](#pulling-image-from-the-server)
 - [Labels](#lables)
     - [Creating](#label-creating)
     - [Updating](#label-updating)
@@ -28,16 +30,24 @@ You can create it in two ways:
 1. with `masterToken`
 2. with `masterToken` and `version`
 
-Available several methods:
+Available methods:
 1. `NodeResponse getFullData()` \
 Returns all nodes, labels and other data from the server. \
 Also updates current version. \
 Wrong version may cause problems, so 
-**it is recommended to execute the method to get current version and save it somewhere**
+**it is recommended to first execute the method to get current version and save it somewhere**
 2. `NodeResponse changes(NodeRequest nodeRequest)` \
 Returns response from the server with changes that may have been updated by other devices and that were provided in `nodeRequest`
 3. `NodeResponse changes()` \
 Returns response from the server with changes that may have been updated by other devices
+4. `ImageBlob uploadImage(byte[] imageBytes, String blobServerId, String nodeServerId)` \
+Returns `ImageBlob` where you can see info about uploaded image
+5. `ImageData getImageData(String blobServerId, String nodeServerId)` \
+Returns data of requested image
+6. `String getCurrentVersion()` \
+Returns current version
+7. `void setCurrentVersion(String currentVersion)` \
+Sets current version
 
 ### Master token
 To get access to the Google keep API using this library, you need to receive master token. \
@@ -79,17 +89,18 @@ With this builder you can manipulate with nodes and labels more easily.
 ```java
 import io.github.rukins.gkeepapi.GKeepAPI;
 import io.github.rukins.gkeepapi.NodeRequestBuilder;
-import io.github.rukins.gkeepapi.model.NodeRequest;
-import io.github.rukins.gkeepapi.model.NodeResponse;
+import io.github.rukins.gkeepapi.model.gkeep.NodeRequest;
+import io.github.rukins.gkeepapi.model.gkeep.NodeResponse;
 
 public class Main {
   public static void main(String[] args) {
     GKeepAPI gKeepAPI = new GKeepAPI("aas_et/***", "current_version");
 
-    NodeRequest nodeRequest = NodeRequestBuilder.builder()
-            .build();
+    NodeRequestBuilder nodeRequestBuilder = NodeRequestBuilder.builder();
+    
+    // do something
 
-    NodeResponse nodeResponse = gKeepAPI.changes(nodeRequest);
+    NodeResponse nodeResponse = gKeepAPI.changes(nodeRequestBuilder.build());
   }
 }
 ```
@@ -127,11 +138,10 @@ Sorting is available with `sortValue` parameter.
 ```java
 import io.github.rukins.gkeepapi.GKeepAPI;
 import io.github.rukins.gkeepapi.NodeRequestBuilder;
-import io.github.rukins.gkeepapi.model.NodeRequest;
-import io.github.rukins.gkeepapi.model.NodeResponse;
-import io.github.rukins.gkeepapi.model.node.nodeobject.ListItemNode;
-import io.github.rukins.gkeepapi.model.node.nodeobject.ListNode;
-import io.github.rukins.gkeepapi.model.node.nodeobject.NoteNode;
+import io.github.rukins.gkeepapi.model.gkeep.NodeResponse;
+import io.github.rukins.gkeepapi.model.gkeep.node.nodeobject.ListItemNode;
+import io.github.rukins.gkeepapi.model.gkeep.node.nodeobject.ListNode;
+import io.github.rukins.gkeepapi.model.gkeep.node.nodeobject.NoteNode;
 
 import java.util.List;
 
@@ -140,7 +150,7 @@ public class Main {
     GKeepAPI gKeepAPI = new GKeepAPI("aas_et/***", "current_version");
 
     NodeRequestBuilder nodeRequestBuilder = NodeRequestBuilder.builder();
-            
+
     NoteNode noteNode = nodeRequestBuilder.createOrUpdateNoteNode(
             NoteNode.builder()
                     .id(IdUtils.generateId())
@@ -186,12 +196,11 @@ The `parentId` of child nodes is added automatically.
 ```java
 import io.github.rukins.gkeepapi.GKeepAPI;
 import io.github.rukins.gkeepapi.NodeRequestBuilder;
-import io.github.rukins.gkeepapi.model.NodeRequest;
-import io.github.rukins.gkeepapi.model.NodeResponse;
-import io.github.rukins.gkeepapi.model.node.Color;
-import io.github.rukins.gkeepapi.model.node.nodeobject.ListItemNode;
-import io.github.rukins.gkeepapi.model.node.nodeobject.ListNode;
-import io.github.rukins.gkeepapi.model.node.nodeobject.NoteNode;
+import io.github.rukins.gkeepapi.model.gkeep.NodeResponse;
+import io.github.rukins.gkeepapi.model.gkeep.node.Color;
+import io.github.rukins.gkeepapi.model.gkeep.node.nodeobject.ListItemNode;
+import io.github.rukins.gkeepapi.model.gkeep.node.nodeobject.ListNode;
+import io.github.rukins.gkeepapi.model.gkeep.node.nodeobject.NoteNode;
 
 import java.util.List;
 
@@ -200,7 +209,7 @@ public class Main {
     GKeepAPI gKeepAPI = new GKeepAPI("aas_et/***", "current_version");
 
     NodeRequestBuilder nodeRequestBuilder = NodeRequestBuilder.builder();
-    
+
     NoteNode noteNode = nodeRequestBuilder.createOrUpdateNoteNode(
             NoteNode.builder()
                     .id("noteNodeId")
@@ -247,13 +256,10 @@ You can add label to a node with `addLabelToNoteNode(NoteNode noteNode, Label la
 ```java
 import io.github.rukins.gkeepapi.GKeepAPI;
 import io.github.rukins.gkeepapi.NodeRequestBuilder;
-import io.github.rukins.gkeepapi.model.NodeRequest;
-import io.github.rukins.gkeepapi.model.NodeResponse;
-import io.github.rukins.gkeepapi.model.node.nodeobject.ListNode;
-import io.github.rukins.gkeepapi.model.node.nodeobject.NoteNode;
-import io.github.rukins.gkeepapi.model.userinfo.Label;
-
-import java.util.List;
+import io.github.rukins.gkeepapi.model.gkeep.NodeResponse;
+import io.github.rukins.gkeepapi.model.gkeep.node.nodeobject.ListNode;
+import io.github.rukins.gkeepapi.model.gkeep.node.nodeobject.NoteNode;
+import io.github.rukins.gkeepapi.model.gkeep.userinfo.Label;
 
 public class Main {
   public static void main(String[] args) {
@@ -264,7 +270,7 @@ public class Main {
     Label label = Label.builder()
             .mainId("some_id_of_existing_label")
             .build();
-    
+
     NoteNode noteNode = nodeRequestBuilder.addLabelToNoteNode(
             NoteNode.builder()
                     .id("noteNodeId")
@@ -291,12 +297,9 @@ use `trashNode(Node node)`, `restoreNode(Node node)` or `deleteNode(Node node)`.
 ```java
 import io.github.rukins.gkeepapi.GKeepAPI;
 import io.github.rukins.gkeepapi.NodeRequestBuilder;
-import io.github.rukins.gkeepapi.model.NodeRequest;
-import io.github.rukins.gkeepapi.model.NodeResponse;
-import io.github.rukins.gkeepapi.model.node.nodeobject.ListNode;
-import io.github.rukins.gkeepapi.model.node.nodeobject.NoteNode;
-
-import java.util.List;
+import io.github.rukins.gkeepapi.model.gkeep.NodeResponse;
+import io.github.rukins.gkeepapi.model.gkeep.node.nodeobject.ListNode;
+import io.github.rukins.gkeepapi.model.gkeep.node.nodeobject.NoteNode;
 
 public class Main {
   public static void main(String[] args) {
@@ -331,12 +334,9 @@ LISTs are archived or unarchived with `archiveListNode(ListNode listNode)` and `
 ```java
 import io.github.rukins.gkeepapi.GKeepAPI;
 import io.github.rukins.gkeepapi.NodeRequestBuilder;
-import io.github.rukins.gkeepapi.model.NodeRequest;
-import io.github.rukins.gkeepapi.model.NodeResponse;
-import io.github.rukins.gkeepapi.model.node.nodeobject.ListNode;
-import io.github.rukins.gkeepapi.model.node.nodeobject.NoteNode;
-
-import java.util.List;
+import io.github.rukins.gkeepapi.model.gkeep.NodeResponse;
+import io.github.rukins.gkeepapi.model.gkeep.node.nodeobject.ListNode;
+import io.github.rukins.gkeepapi.model.gkeep.node.nodeobject.NoteNode;
 
 public class Main {
   public static void main(String[] args) {
@@ -362,7 +362,126 @@ public class Main {
 ```
 
 ## Media (Blobs) <a id="blobs" />
-The `BlobNode` is available, but you can't upload or download media for now.
+The uploading images and pulling it from the server are available.
+You can do it just using `uploadImage(byte[] imageBytes, String blobServerId, String nodeServerId)` 
+and `getImageData(String blobServerId, String nodeServerId)` methods of `GKeepAPI`.
+
+### Uploading image
+First you have to get image data using `ImageUtils.getImageData(File image)` method, 
+create `NoteNode` or `ListNode` with `BlobNode` passing there received data and upload the image.
+
+```java
+import io.github.rukins.gkeepapi.GKeepAPI;
+import io.github.rukins.gkeepapi.model.gkeep.node.NodeType;
+import io.github.rukins.gkeepapi.model.gkeep.node.blob.ExtractionStatus;
+import io.github.rukins.gkeepapi.model.gkeep.node.blob.blobobject.ImageBlob;
+import io.github.rukins.gkeepapi.model.gkeep.node.nodeobject.BlobNode;
+import io.github.rukins.gkeepapi.model.gkeep.node.nodeobject.ListItemNode;
+import io.github.rukins.gkeepapi.model.gkeep.node.nodeobject.Node;
+import io.github.rukins.gkeepapi.model.gkeep.node.nodeobject.NoteNode;
+import io.github.rukins.gkeepapi.model.image.ImageData;
+import io.github.rukins.gkeepapi.utils.ImageUtils;
+import io.github.rukins.gkeepapi.utils.NodeUtils;
+import io.github.rukins.gpsoauth.exception.AuthError;
+
+import java.io.File;
+import java.util.List;
+
+public class Main { 
+  public static void main(String[] args) throws Exception {
+    GKeepAPI gKeepAPI = new GKeepAPI("aas_et/***", "current_version");
+
+    ImageData imageData = ImageUtils.getImageData(new File("/path/to/dir/some.jpg"));
+
+    NodeRequestBuilder nodeRequestBuilder = NodeRequestBuilder.builder();
+
+    NoteNode noteNode = nodeRequestBuilder.createNoteNode(
+        NoteNode.builder()
+            .title("note with image")
+            .listItemNode(
+                ListItemNode.builder()
+                    .text("some text")
+                    .build()
+            )
+            .blobNodes(
+                List.of(
+                    BlobNode.builder()
+                        .blob(
+                            ImageBlob.builder()
+                                .byteSize(imageData.getByteSize())
+                                .height(imageData.getImageSize().getHeight())
+                                .width(imageData.getImageSize().getWidth())
+                                .mimetype(imageData.getMimeType())
+                                .extractionStatus(ExtractionStatus.PROCESSING_REQUESTED)
+                                .build()
+                        )
+                        .build()
+                )
+            )
+            .build()
+    );
+
+    List<Node> assembledNodeList = NodeUtils.getAssembledNodeList(gKeepAPI.changes(nodeRequestBuilder.build()).getNodes());
+
+    assembledNodeList.forEach(n -> {
+        if (n.getType() == NodeType.NOTE) {
+            ((NoteNode) n).getBlobNodes().forEach(blob -> {
+                try {
+                    ImageBlob imageBlob 
+                            = gKeepAPI.uploadImage(imageData.getBytes(), blob.getServerId(), blob.getParentServerId());
+                } catch (AuthError e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        }
+    });
+    
+    List<Node> nodes = NodeUtils.getAssembledNodeList(gKeepAPI.changes().getNodes());
+  }
+}
+```
+
+### Pulling image from the server
+To pull image from the server you need `BlobNode` with `serverId` and `parentServerId`, with which
+you can get image data using `getImageData(String blobServerId, String nodeServerId)` method.
+
+And `ImageUtils.createImageFile(ImageData imageData, String pathToDirectory)` method can help you save the image on your device.
+
+*Server names files with the default name `unnamed`.*
+
+```java
+import io.github.rukins.gkeepapi.GKeepAPI;
+import io.github.rukins.gkeepapi.model.gkeep.node.nodeobject.BlobNode;
+import io.github.rukins.gkeepapi.model.gkeep.node.nodeobject.ListNode;
+import io.github.rukins.gkeepapi.model.image.ImageData;
+import io.github.rukins.gkeepapi.utils.ImageUtils;
+
+import java.util.List;
+
+public class Main {
+  public static void main(String[] args) throws Exception {
+    GKeepAPI gKeepAPI = new GKeepAPI("aas_et/***", "current_version");
+
+    ListNode listNode = null; // some note you got from the server
+
+    List<BlobNode> blobNodeList = listNode.getBlobNodes();
+
+    for (int i = 0; i < blobNodeList.size(); i++) {
+        ImageData imageData = gKeepAPI.getImageData(
+                blobNodeList.get(i).getServerId(),
+                blobNodeList.get(i).getParentServerId()
+        );
+        
+        imageData.setFileName(i + imageData.getFileName());
+        
+        ImageUtils.createImageFile(
+                imageData,
+                "/path/to/dir/"
+        );
+    }
+  }
+}
+```
 
 ## Labels
 
@@ -374,18 +493,15 @@ If you create with `createLabel(Label label)` method, `id` will be generated aut
 ```java
 import io.github.rukins.gkeepapi.GKeepAPI;
 import io.github.rukins.gkeepapi.NodeRequestBuilder;
-import io.github.rukins.gkeepapi.model.NodeRequest;
-import io.github.rukins.gkeepapi.model.NodeResponse;
-import io.github.rukins.gkeepapi.model.userinfo.Label;
-
-import java.util.List;
+import io.github.rukins.gkeepapi.model.gkeep.NodeResponse;
+import io.github.rukins.gkeepapi.model.gkeep.userinfo.Label;
 
 public class Main {
   public static void main(String[] args) {
     GKeepAPI gKeepAPI = new GKeepAPI("aas_et/***", "current_version");
 
     NodeRequestBuilder nodeRequestBuilder = NodeRequestBuilder.builder();
-    
+
     Label label = nodeRequestBuilder.createLabel(
             Label.builder()
                     .name("some label")
@@ -403,18 +519,15 @@ Updating labels is available with `createOrUpdateLabel(Label label)` method.
 ```java
 import io.github.rukins.gkeepapi.GKeepAPI;
 import io.github.rukins.gkeepapi.NodeRequestBuilder;
-import io.github.rukins.gkeepapi.model.NodeRequest;
-import io.github.rukins.gkeepapi.model.NodeResponse;
-import io.github.rukins.gkeepapi.model.userinfo.Label;
-
-import java.util.List;
+import io.github.rukins.gkeepapi.model.gkeep.NodeResponse;
+import io.github.rukins.gkeepapi.model.gkeep.userinfo.Label;
 
 public class Main {
   public static void main(String[] args) {
     GKeepAPI gKeepAPI = new GKeepAPI("aas_et/***", "current_version");
 
     NodeRequestBuilder nodeRequestBuilder = NodeRequestBuilder.builder();
-    
+
     Label label = nodeRequestBuilder.createOrUpdateLabel(
             Label.builder()
                     .mainId("label_id")
@@ -433,18 +546,15 @@ Deleting labels is available with `deleteLabel(Label label)` method.
 ```java
 import io.github.rukins.gkeepapi.GKeepAPI;
 import io.github.rukins.gkeepapi.NodeRequestBuilder;
-import io.github.rukins.gkeepapi.model.NodeRequest;
-import io.github.rukins.gkeepapi.model.NodeResponse;
-import io.github.rukins.gkeepapi.model.userinfo.Label;
-
-import java.util.List;
+import io.github.rukins.gkeepapi.model.gkeep.NodeResponse;
+import io.github.rukins.gkeepapi.model.gkeep.userinfo.Label;
 
 public class Main {
   public static void main(String[] args) {
     GKeepAPI gKeepAPI = new GKeepAPI("aas_et/***", "current_version");
 
     NodeRequestBuilder nodeRequestBuilder = NodeRequestBuilder.builder();
-    
+
     Label label = nodeRequestBuilder.deleteLabel(
             Label.builder()
                     .mainId("label_id")
