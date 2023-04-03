@@ -1,47 +1,19 @@
 package io.github.rukins.gkeepapi.client;
 
-import com.google.gson.ExclusionStrategy;
-import com.google.gson.FieldAttributes;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import feign.Feign;
 import feign.FeignException;
 import feign.gson.GsonDecoder;
 import feign.gson.GsonEncoder;
-import io.github.rukins.gkeepapi.annotation.Exclude;
+import io.github.rukins.gkeepapi.config.GsonConfig;
 import io.github.rukins.gkeepapi.model.gkeep.NodeRequest;
 import io.github.rukins.gkeepapi.model.gkeep.NodeResponse;
-import io.github.rukins.gkeepapi.model.gkeep.node.blob.MimeType;
-import io.github.rukins.gkeepapi.model.gkeep.node.blob.blobobject.Blob;
-import io.github.rukins.gkeepapi.model.gkeep.node.nodeobject.Node;
-import io.github.rukins.gkeepapi.typeadapter.*;
 import io.github.rukins.gpsoauth.Auth;
 import io.github.rukins.gpsoauth.exception.AuthError;
 import io.github.rukins.gpsoauth.model.AccessTokenRequestParams;
 
-import java.time.LocalDateTime;
-import java.util.Locale;
-
 public class GKeepClientWrapper {
-    private final ExclusionStrategy exclusionStrategy = new ExclusionStrategy() {
-        @Override
-        public boolean shouldSkipField(FieldAttributes field) {
-            return field.getAnnotation(Exclude.class) != null;
-        }
-        @Override
-        public boolean shouldSkipClass(Class<?> aClass) {
-            return false;
-        }
-    };
-
-    private final Gson gson = new GsonBuilder()
-            .setExclusionStrategies(exclusionStrategy)
-            .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeTypeAdapter())
-            .registerTypeAdapter(Locale.class, new LocaleTypeAdapter())
-            .registerTypeAdapter(Node.class, new NodeTypeAdapter())
-            .registerTypeAdapter(Blob.class, new BlobTypeAdapter())
-            .registerTypeAdapter(MimeType.class, new MimeTypeEnumTypeAdapter())
-            .create();
+    private final Gson gson = GsonConfig.gson();
 
     private final GKeepClient client = Feign.builder()
             .decoder(new GsonDecoder(gson))

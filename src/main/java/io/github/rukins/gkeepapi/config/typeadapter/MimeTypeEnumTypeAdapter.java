@@ -1,4 +1,4 @@
-package io.github.rukins.gkeepapi.typeadapter;
+package io.github.rukins.gkeepapi.config.typeadapter;
 
 import com.google.gson.*;
 import io.github.rukins.gkeepapi.model.gkeep.node.blob.MimeType;
