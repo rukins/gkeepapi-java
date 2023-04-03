@@ -11,12 +11,10 @@ import feign.gson.GsonEncoder;
 import io.github.rukins.gkeepapi.annotation.Exclude;
 import io.github.rukins.gkeepapi.model.gkeep.NodeRequest;
 import io.github.rukins.gkeepapi.model.gkeep.NodeResponse;
+import io.github.rukins.gkeepapi.model.gkeep.node.blob.MimeType;
 import io.github.rukins.gkeepapi.model.gkeep.node.blob.blobobject.Blob;
 import io.github.rukins.gkeepapi.model.gkeep.node.nodeobject.Node;
-import io.github.rukins.gkeepapi.typeadapter.BlobTypeAdapter;
-import io.github.rukins.gkeepapi.typeadapter.LocalDateTimeTypeAdapter;
-import io.github.rukins.gkeepapi.typeadapter.LocaleTypeAdapter;
-import io.github.rukins.gkeepapi.typeadapter.NodeTypeAdapter;
+import io.github.rukins.gkeepapi.typeadapter.*;
 import io.github.rukins.gpsoauth.Auth;
 import io.github.rukins.gpsoauth.exception.AuthError;
 import io.github.rukins.gpsoauth.model.AccessTokenRequestParams;
@@ -42,6 +40,7 @@ public class GKeepClientWrapper {
             .registerTypeAdapter(Locale.class, new LocaleTypeAdapter())
             .registerTypeAdapter(Node.class, new NodeTypeAdapter())
             .registerTypeAdapter(Blob.class, new BlobTypeAdapter())
+            .registerTypeAdapter(MimeType.class, new MimeTypeEnumTypeAdapter())
             .create();
 
     private final GKeepClient client = Feign.builder()

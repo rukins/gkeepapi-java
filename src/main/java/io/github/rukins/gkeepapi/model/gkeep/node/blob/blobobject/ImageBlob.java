@@ -2,11 +2,12 @@ package io.github.rukins.gkeepapi.model.gkeep.node.blob.blobobject;
 
 import com.google.gson.annotations.SerializedName;
 import io.github.rukins.gkeepapi.model.gkeep.node.blob.BlobType;
+import io.github.rukins.gkeepapi.model.gkeep.node.blob.MimeType;
 
 import java.util.Objects;
 
 public class ImageBlob extends Blob {
-    private String mimetype;
+    private MimeType mimetype;
     @SerializedName("byte_size")
     private Integer byteSize;
     private Integer width;
@@ -39,7 +40,7 @@ public class ImageBlob extends Blob {
             return this;
         }
 
-        public Builder mimetype(String mimetype) {
+        public Builder mimetype(MimeType mimetype) {
             imageBlob.setMimetype(mimetype);
             return this;
         }
@@ -69,11 +70,11 @@ public class ImageBlob extends Blob {
         }
     }
 
-    public String getMimetype() {
+    public MimeType getMimetype() {
         return mimetype;
     }
 
-    public void setMimetype(String mimetype) {
+    public void setMimetype(MimeType mimetype) {
         this.mimetype = mimetype;
     }
 
