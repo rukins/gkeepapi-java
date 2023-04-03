@@ -3,8 +3,10 @@ package io.github.rukins.gkeepapi;
 import io.github.rukins.gkeepapi.client.GKeepClientWrapper;
 import io.github.rukins.gkeepapi.model.gkeep.NodeRequest;
 import io.github.rukins.gkeepapi.model.gkeep.NodeResponse;
+import io.github.rukins.gkeepapi.model.gkeep.node.blob.blobobject.ImageBlob;
 import io.github.rukins.gkeepapi.model.gkeep.node.nodeobject.Node;
 import io.github.rukins.gkeepapi.model.gkeep.userinfo.UserInfo;
+import io.github.rukins.gkeepapi.model.image.ImageData;
 import io.github.rukins.gkeepapi.utils.NodeUtils;
 import io.github.rukins.gpsoauth.exception.AuthError;
 
@@ -61,6 +63,14 @@ public class GKeepAPI {
 
     public NodeResponse changes() throws AuthError {
         return changes(NodeRequest.withDefaultValues().build());
+    }
+
+    public ImageBlob uploadImage(byte[] imageBytes, String blobServerId, String nodeServerId) throws AuthError {
+        return client.uploadImage(imageBytes, blobServerId, nodeServerId, client.getUploadId(blobServerId, nodeServerId));
+    }
+
+    public ImageData getImageData(String blobServerId, String nodeServerId) throws AuthError {
+        return client.getImageData(blobServerId, nodeServerId);
     }
 
     public String getCurrentVersion() {
