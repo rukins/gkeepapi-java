@@ -28,6 +28,7 @@ public class GsonConfig {
     public static Gson gson() {
         return new GsonBuilder()
                 .setExclusionStrategies(exclusionStrategy)
+                .disableHtmlEscaping()
                 .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeTypeAdapter())
                 .registerTypeAdapter(Locale.class, new LocaleTypeAdapter())
                 .registerTypeAdapter(Node.class, new NodeTypeAdapter())
