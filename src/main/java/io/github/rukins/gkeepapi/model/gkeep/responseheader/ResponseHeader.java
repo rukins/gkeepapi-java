@@ -1,9 +1,13 @@
 package io.github.rukins.gkeepapi.model.gkeep.responseheader;
 
+import java.util.List;
+
 public class ResponseHeader {
     private UpdateState updateState;
 
     private String requestId;
+
+    private List<Integer> experimentIds;
 
     public UpdateState getUpdateState() {
         return updateState;
@@ -11,6 +15,10 @@ public class ResponseHeader {
 
     public String getRequestId() {
         return requestId;
+    }
+
+    public List<Integer> getExperimentIds() {
+        return experimentIds;
     }
 
     @Override
