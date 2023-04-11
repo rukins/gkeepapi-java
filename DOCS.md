@@ -31,22 +31,19 @@ You can create it in two ways:
 2. with `masterToken` and `version`
 
 Available methods:
-1. `NodeResponse getFullData()` \
-Returns all nodes, labels and other data from the server. \
-Also updates current version. \
-Wrong version may cause problems, so 
-**it is recommended to first execute the method to get current version and save it somewhere**
-2. `NodeResponse changes(NodeRequest nodeRequest)` \
+1. `NodeResponse changes(NodeRequest nodeRequest)` \
 Returns response from the server with changes that may have been updated by other devices and that were provided in `nodeRequest`
-3. `NodeResponse changes()` \
-Returns response from the server with changes that may have been updated by other devices
-4. `ImageBlob uploadImage(byte[] imageBytes, String blobServerId, String nodeServerId)` \
+2. `NodeResponse changes()` \
+Returns response from the server with changes that may have been updated by other devices. \
+In case when the current version is null or incorrect, this method returns all nodes, labels and other data from the server. \
+**it is recommended to first execute the method to get current version and save it somewhere**
+3. `ImageBlob uploadImage(byte[] imageBytes, String blobServerId, String nodeServerId)` \
 Returns `ImageBlob` where you can see info about uploaded image
-5. `ImageData getImageData(String blobServerId, String nodeServerId)` \
+4. `ImageData getImageData(String blobServerId, String nodeServerId)` \
 Returns data of requested image
-6. `String getCurrentVersion()` \
+5. `String getCurrentVersion()` \
 Returns current version
-7. `void setCurrentVersion(String currentVersion)` \
+6. `void setCurrentVersion(String currentVersion)` \
 Sets current version
 
 ### Master token
