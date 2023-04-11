@@ -12,7 +12,8 @@ public interface GKeepUploadMediaClient {
     @RequestLine("POST /upload/notes/v1/media/{blob-serverId}?noteId={node-serverId}&uploadType=resumable")
     @Headers({
             "Connection: Keep-Alive",
-            "Authorization: OAuth {access-token}"
+            "Authorization: OAuth {access-token}",
+            "User-Agent: x-gkeepapi (https://github.com/rukins/gkeepapi-java)"
     })
     Response uploadMedia(
             @Param("blob-serverId") String blobServerId,
@@ -22,7 +23,8 @@ public interface GKeepUploadMediaClient {
 
     @RequestLine("PUT /upload/notes/v1/media/{blob-serverId}?noteId={node-serverId}&uploadType=resumable&upload_id={upload_id}")
     @Headers({
-            "Connection: Keep-Alive"
+            "Connection: Keep-Alive",
+            "User-Agent: x-gkeepapi (https://github.com/rukins/gkeepapi-java)"
     })
     ImageBlob uploadMedia(
             @Param("file") byte[] imageBytes,

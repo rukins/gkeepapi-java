@@ -12,7 +12,8 @@ public interface GKeepMediaClient {
     // (that is located in Location header of the response) and returns image bytes
     @RequestLine("GET /media/v2/{node-serverId}/{blob-serverId}") // ?accept=audio/3gpp,audio/amr-wb,image/gif,image/jpg,image/jpeg,image/png&sz=2148
     @Headers({
-            "Authorization: OAuth {access-token}"
+            "Authorization: OAuth {access-token}",
+            "User-Agent: x-gkeepapi (https://github.com/rukins/gkeepapi-java)"
     })
     Response media(
             @Param("blob-serverId") String blobServerId,
