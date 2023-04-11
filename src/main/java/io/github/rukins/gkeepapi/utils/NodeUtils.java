@@ -8,11 +8,9 @@ import io.github.rukins.gkeepapi.model.gkeep.userinfo.UserInfo;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class NodeUtils {
     public static List<Node> getAssembledNodeList(List<Node> allNodes) {
@@ -153,7 +151,11 @@ public class NodeUtils {
         return oldVersion;
     }
 
-    public static List<Node> mergeNodes(List<Node> oldNodes, List<Node> newNodes) {
+    public static List<Node> mergeNodes(List<? extends Node> oldNodes, List<? extends Node> newNodes) {
+        if (oldNodes == null || newNodes == null) {
+            return null;
+        }
+
         Map<String, Node> idAndNodeMap = oldNodes.stream()
                 .collect(Collectors.toMap(Node::getId, n -> n));
 
@@ -166,7 +168,7 @@ public class NodeUtils {
                 Node oldNode = idAndNodeMap.get(newNode.getId());
 
                 if (!newNode.equals(oldNode)) {
-                    idAndNodeMap.replace(newNode.getId(), newNode);
+                    idAndNodeMap.replace(newNode.getId(), NodeUtils.mergeNode(oldNode, newNode));
                 }
             } else {
                 idAndNodeMap.put(newNode.getId(), newNode);
@@ -178,7 +180,7 @@ public class NodeUtils {
 
     public static UserInfo mergeUserInfo(UserInfo oldUserInfo, UserInfo newUserInfo) {
         if (oldUserInfo == null || newUserInfo == null) {
-            return null;
+            return oldUserInfo;
         }
 
         if (newUserInfo.getTimestamps() != null) {
@@ -195,6 +197,10 @@ public class NodeUtils {
     }
 
     public static List<Label> mergeLabels(List<Label> oldLabels, List<Label> newLabels) {
+        if (oldLabels == null || newLabels == null) {
+            return null;
+        }
+
         Map<String, Label> idAndLabelMap = oldLabels.stream()
                 .collect(Collectors.toMap(Label::getMainId, n -> n));
 
@@ -215,7 +221,45 @@ public class NodeUtils {
 
     public static Node mergeNode(Node oldNode, Node newNode) {
         try {
-            return (Node) mergeObjectByGettersAndSetters(oldNode, newNode);
+            Node mergedNode = (Node) mergeObjectByGettersAndSetters(oldNode, newNode);
+
+            if (mergedNode.getType() == NodeType.NOTE) {
+                ((NoteNode) mergedNode).setBlobNodes(
+                        mergeNodes(
+                                ((NoteNode) oldNode).getBlobNodes(),
+                                ((NoteNode) newNode).getBlobNodes()
+                        ).stream().map(n -> (BlobNode) n).toList()
+                );
+
+                ((NoteNode) mergedNode).setLabelIds(
+                        Stream.concat(
+                                ((NoteNode) oldNode).getLabelIds().stream(),
+                                ((NoteNode) newNode).getLabelIds().stream()
+                        ).distinct().toList()
+                );
+            } else if (mergedNode.getType() == NodeType.LIST) {
+                ((ListNode) mergedNode).setListItemNodes(
+                        mergeNodes(
+                                ((ListNode) oldNode).getListItemNodes(),
+                                ((ListNode) newNode).getListItemNodes()
+                        ).stream().map(n -> (ListItemNode) n).toList()
+                );
+                ((ListNode) mergedNode).setBlobNodes(
+                        mergeNodes(
+                                ((ListNode) oldNode).getBlobNodes(),
+                                ((ListNode) newNode).getBlobNodes()
+                        ).stream().map(n -> (BlobNode) n).toList()
+                );
+
+                ((ListNode) mergedNode).setLabelIds(
+                        Stream.concat(
+                                ((ListNode) oldNode).getLabelIds().stream(),
+                                ((ListNode) newNode).getLabelIds().stream()
+                        ).distinct().toList()
+                );
+            }
+
+            return mergedNode;
         } catch (InvocationTargetException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
@@ -223,30 +267,66 @@ public class NodeUtils {
 
     public static Label mergeLabel(Label oldLabel, Label newLabel) {
         try {
-            return (Label) mergeObjectByGettersAndSetters(oldLabel, newLabel);
+            Label mergedLabel = (Label) mergeObjectByGettersAndSetters(oldLabel, newLabel);
+
+            mergedLabel.setMergedIds(newLabel.getMergedIds());
+
+            return mergedLabel;
         } catch (InvocationTargetException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
     }
 
     private static Object mergeObjectByGettersAndSetters(Object oldObj, Object newObj) throws InvocationTargetException, IllegalAccessException {
+        if (oldObj == null || newObj == null || !oldObj.getClass().equals(newObj.getClass())) {
+            return null;
+        }
+
         List<Method> getters = Arrays.stream(newObj.getClass().getMethods())
                 .filter(m -> m.getName().startsWith("get"))
                 .toList();
 
         for (Method getter : getters) {
-            Object returnObj = getter.invoke(newObj);
+            Object returnedNewObj = getter.invoke(newObj);
 
-            if (returnObj != null) {
+            if (returnedNewObj != null) {
                 try {
-                    oldObj.getClass().getMethod(
-                            "set" + getter.getName().substring(3),
-                            getter.getReturnType()
-                    ).invoke(oldObj, returnObj);
+                    if (isPrimitiveWrapperOrString(returnedNewObj) || returnedNewObj.getClass().isEnum()) {
+                        oldObj.getClass().getMethod(
+                                "set" + getter.getName().substring(3),
+                                getter.getReturnType()
+                        ).invoke(oldObj, returnedNewObj);
+                    } else if (returnedNewObj instanceof Collection || returnedNewObj.getClass().isArray()) {
+                        // TODO
+                    } else {
+                        oldObj.getClass().getMethod(
+                                "set" + getter.getName().substring(3),
+                                getter.getReturnType()
+                        ).invoke(oldObj,
+                                mergeObjectByGettersAndSetters(
+                                        oldObj.getClass().getMethod(
+                                                "get" + getter.getName().substring(3)
+                                        ).invoke(oldObj),
+                                        returnedNewObj
+                                )
+                        );
+                    }
                 } catch (NoSuchMethodException ignored) {}
             }
         }
 
         return oldObj;
+    }
+
+    private static Boolean isPrimitiveWrapperOrString(Object obj) {
+        return obj instanceof Byte
+                || obj instanceof Short
+                || obj instanceof Integer
+                || obj instanceof Long
+                || obj instanceof Float
+                || obj instanceof Double
+                || obj instanceof Character
+                || obj instanceof Boolean
+                || obj instanceof String;
     }
 }
