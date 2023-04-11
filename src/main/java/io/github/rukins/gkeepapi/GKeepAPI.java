@@ -27,36 +27,35 @@ public class GKeepAPI {
         this.currentVersion = version;
     }
 
-    public NodeResponse getFullData() throws AuthError {
-        List<Node> nodes = new ArrayList<>();
-        UserInfo userInfo;
-
-        NodeResponse fullData = changes();
-        userInfo = fullData.getUserInfo();
-
-        while (fullData.getTruncated()) {
-            if (fullData.getNodes() != null) {
-                nodes.addAll(fullData.getNodes());
-            }
-            fullData = changes();
-            NodeUtils.mergeUserInfo(userInfo, fullData.getUserInfo());
-        }
-
-        if (fullData.getNodes() != null) {
-            nodes.addAll(fullData.getNodes());
-        }
-
-        fullData.setNodes(nodes);
-        fullData.setUserInfo(userInfo);
-
-        return fullData;
-    }
-
     public NodeResponse changes(NodeRequest nodeRequest) throws AuthError {
-        nodeRequest.setTargetVersion(currentVersion);
+        List<Node> nodes = new ArrayList<>();
 
+        nodeRequest.setTargetVersion(currentVersion);
         NodeResponse nodeResponse = client.changes(nodeRequest);
         currentVersion = nodeResponse.getToVersion();
+
+        UserInfo userInfo = nodeResponse.getUserInfo();
+
+        nodeRequest = NodeRequest.withDefaultValues().build();
+
+        while (nodeResponse.getTruncated()) {
+            if (nodeResponse.getNodes() != null) {
+                nodes.addAll(nodeResponse.getNodes());
+            }
+
+            nodeRequest.setTargetVersion(currentVersion);
+            nodeResponse = client.changes(nodeRequest);
+            currentVersion = nodeResponse.getToVersion();
+
+            NodeUtils.mergeUserInfo(userInfo, nodeResponse.getUserInfo());
+        }
+
+        if (nodeResponse.getNodes() != null) {
+            nodes.addAll(nodeResponse.getNodes());
+        }
+
+        nodeResponse.setNodes(nodes);
+        nodeResponse.setUserInfo(userInfo);
 
         return nodeResponse;
     }
