@@ -10,6 +10,7 @@ import feign.codec.Encoder;
 import feign.gson.GsonDecoder;
 import feign.gson.GsonEncoder;
 import io.github.rukins.gkeepapi.config.GsonConfig;
+import io.github.rukins.gkeepapi.exception.WrongBlobDataException;
 import io.github.rukins.gkeepapi.model.gkeep.NodeRequest;
 import io.github.rukins.gkeepapi.model.gkeep.NodeResponse;
 import io.github.rukins.gkeepapi.model.gkeep.node.blob.MimeType;
@@ -102,7 +103,7 @@ public class GKeepClientWrapper {
         return uploadMediaClient.uploadMedia(imageBytes, blobServerId, nodeServerId, uploadId);
     }
 
-    public ImageData getImageData(String blobServerId, String nodeServerId) throws AuthError {
+    public ImageData getImageData(String blobServerId, String nodeServerId) throws AuthError, WrongBlobDataException {
         final String CONTENT_TYPE_HEADER = "Content-Type";
         final String CONTENT_DISPOSITION_HEADER = "Content-Disposition";
 
@@ -116,6 +117,7 @@ public class GKeepClientWrapper {
                         response.body().asInputStream().readAllBytes(), response.headers()
                 );
             }
+            checkIfWrongBlobData(response);
 
             imageBytes = response.body().asInputStream().readAllBytes();
             headers = response.headers();
@@ -123,6 +125,7 @@ public class GKeepClientWrapper {
             updateAccessToken();
 
             Response response = mediaClient.media(blobServerId, nodeServerId, accessToken);
+            checkIfWrongBlobData(response);
 
             try {
                 imageBytes = response.body().asInputStream().readAllBytes();
@@ -138,12 +141,12 @@ public class GKeepClientWrapper {
 
         return headers.containsKey(CONTENT_TYPE_HEADER) && headers.containsKey(CONTENT_DISPOSITION_HEADER)
                 ? new ImageData(
-                imageBytes,
-                getFileNameFromContentDispositionHeader(
-                        ((String) headers.get(CONTENT_DISPOSITION_HEADER).toArray()[0])
-                ),
-                MimeType.getByValue((String) headers.get(CONTENT_TYPE_HEADER).toArray()[0])
-        )
+                        imageBytes,
+                        getFileNameFromContentDispositionHeader(
+                                ((String) headers.get(CONTENT_DISPOSITION_HEADER).toArray()[0])
+                        ),
+                        MimeType.getByValue((String) headers.get(CONTENT_TYPE_HEADER).toArray()[0])
+                )
                 : null;
     }
 
@@ -168,6 +171,15 @@ public class GKeepClientWrapper {
         }
 
         return null;
+    }
+
+    private void checkIfWrongBlobData(Response response) throws WrongBlobDataException {
+        if (response.status() == 400) {
+            throw new WrongBlobDataException("Wrong blob server id");
+        }
+        else if (response.status() == 403) {
+            throw new WrongBlobDataException("Wrong node server id");
+        }
     }
 
     private static class FileEncoder implements Encoder {

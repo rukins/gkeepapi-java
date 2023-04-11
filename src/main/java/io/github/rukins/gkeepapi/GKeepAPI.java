@@ -1,6 +1,7 @@
 package io.github.rukins.gkeepapi;
 
 import io.github.rukins.gkeepapi.client.GKeepClientWrapper;
+import io.github.rukins.gkeepapi.exception.WrongBlobDataException;
 import io.github.rukins.gkeepapi.model.gkeep.NodeRequest;
 import io.github.rukins.gkeepapi.model.gkeep.NodeResponse;
 import io.github.rukins.gkeepapi.model.gkeep.node.blob.blobobject.ImageBlob;
@@ -68,7 +69,7 @@ public class GKeepAPI {
         return client.uploadImage(imageBytes, blobServerId, nodeServerId, client.getUploadId(blobServerId, nodeServerId));
     }
 
-    public ImageData getImageData(String blobServerId, String nodeServerId) throws AuthError {
+    public ImageData getImageData(String blobServerId, String nodeServerId) throws AuthError, WrongBlobDataException {
         return client.getImageData(blobServerId, nodeServerId);
     }
 
