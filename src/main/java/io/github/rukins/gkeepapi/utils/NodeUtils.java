@@ -8,6 +8,7 @@ import io.github.rukins.gkeepapi.model.gkeep.userinfo.UserInfo;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -283,7 +284,7 @@ public class NodeUtils {
         }
 
         List<Method> getters = Arrays.stream(newObj.getClass().getMethods())
-                .filter(m -> m.getName().startsWith("get"))
+                .filter(m -> m.getName().startsWith("get") && m.getParameterCount() == 0)
                 .toList();
 
         for (Method getter : getters) {
@@ -291,7 +292,7 @@ public class NodeUtils {
 
             if (returnedNewObj != null) {
                 try {
-                    if (isPrimitiveWrapperOrString(returnedNewObj) || returnedNewObj.getClass().isEnum()) {
+                    if (isBaseObject(returnedNewObj) || returnedNewObj.getClass().isEnum()) {
                         oldObj.getClass().getMethod(
                                 "set" + getter.getName().substring(3),
                                 getter.getReturnType()
@@ -318,7 +319,7 @@ public class NodeUtils {
         return oldObj;
     }
 
-    private static Boolean isPrimitiveWrapperOrString(Object obj) {
+    private static Boolean isBaseObject(Object obj) {
         return obj instanceof Byte
                 || obj instanceof Short
                 || obj instanceof Integer
@@ -327,6 +328,8 @@ public class NodeUtils {
                 || obj instanceof Double
                 || obj instanceof Character
                 || obj instanceof Boolean
-                || obj instanceof String;
+                || obj instanceof String
+                || obj instanceof LocalDateTime
+                || obj instanceof Locale;
     }
 }
