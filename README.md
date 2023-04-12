@@ -76,7 +76,7 @@ public class App {
 ### *Available [here](DOCS.md)*
 
 ## Download
-### *See [Maven Central](https://central.sonatype.com/artifact/io.github.rukins/gkeepapi/1.2.1) or [Maven repository](https://mvnrepository.com/artifact/io.github.rukins/gkeepapi)*
+### *See [Maven Central](https://central.sonatype.com/artifact/io.github.rukins/gkeepapi/1.2.2) or [Maven repository](https://mvnrepository.com/artifact/io.github.rukins/gkeepapi)*
 #### Maven
 ```xml
 <dependency>
