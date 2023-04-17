@@ -106,16 +106,18 @@ public class Main {
 
 ### Node types
 In this implementation of the API each type corresponds to the following objects:
-1. ```NoteNode``` - *NodeType.NOTE*
-2. ```ListNode``` - *NodeType.LIST*
-3. ```ListItemNode``` - *NodeType.LIST_ITEM*
-4. ```BlobNode``` - *NodeType.BLOB*
+1. ```NoteNode``` - **NodeType.NOTE**
+2. ```ListNode``` - **NodeType.LIST**
+3. ```ListItemNode``` - **NodeType.LIST_ITEM**
+4. ```BlobNode``` - **NodeType.BLOB**
+5. ```Node``` - **null**  - *an object without ```type``` can be returned from the server
+   if it has been permanently deleted (```timestamps.deleted``` is not null)*
 
-They all extend abstract class ```Node```.
+They all extend abstract class ```AbstractNode```.
 
 Each object can be built using Builder available in the object
 
-*A node can be cast to the type it corresponds to, without any problem*
+*A node can be cast to the type it corresponds to (except ```Node```), without any problem*
 
 ### Creating <a id="node-creating" />
 New NOTEs are created with the `createNoteNode(NoteNode noteNode)` and `createOrUpdateNoteNode(NoteNode noteNode)` methods of `NodeRequestBuilder`.
@@ -372,9 +374,9 @@ import io.github.rukins.gkeepapi.GKeepAPI;
 import io.github.rukins.gkeepapi.model.gkeep.node.NodeType;
 import io.github.rukins.gkeepapi.model.gkeep.node.blob.ExtractionStatus;
 import io.github.rukins.gkeepapi.model.gkeep.node.blob.blobobject.ImageBlob;
+import io.github.rukins.gkeepapi.model.gkeep.node.nodeobject.AbstractNode;
 import io.github.rukins.gkeepapi.model.gkeep.node.nodeobject.BlobNode;
 import io.github.rukins.gkeepapi.model.gkeep.node.nodeobject.ListItemNode;
-import io.github.rukins.gkeepapi.model.gkeep.node.nodeobject.Node;
 import io.github.rukins.gkeepapi.model.gkeep.node.nodeobject.NoteNode;
 import io.github.rukins.gkeepapi.model.image.ImageData;
 import io.github.rukins.gkeepapi.utils.ImageUtils;
@@ -384,57 +386,57 @@ import io.github.rukins.gpsoauth.exception.AuthError;
 import java.io.File;
 import java.util.List;
 
-public class Main { 
-  public static void main(String[] args) throws Exception {
-    GKeepAPI gKeepAPI = new GKeepAPI("aas_et/***", "current_version");
+public class Main {
+    public static void main(String[] args) throws Exception {
+        GKeepAPI gKeepAPI = new GKeepAPI("aas_et/***", "current_version");
 
-    ImageData imageData = ImageUtils.getImageData(new File("/path/to/dir/some.jpg"));
+        ImageData imageData = ImageUtils.getImageData(new File("/path/to/dir/some.jpg"));
 
-    NodeRequestBuilder nodeRequestBuilder = NodeRequestBuilder.builder();
+        NodeRequestBuilder nodeRequestBuilder = NodeRequestBuilder.builder();
 
-    NoteNode noteNode = nodeRequestBuilder.createNoteNode(
-        NoteNode.builder()
-            .title("note with image")
-            .listItemNode(
-                ListItemNode.builder()
-                    .text("some text")
-                    .build()
-            )
-            .blobNodes(
-                List.of(
-                    BlobNode.builder()
-                        .blob(
-                            ImageBlob.builder()
-                                .byteSize(imageData.getByteSize())
-                                .height(imageData.getImageSize().getHeight())
-                                .width(imageData.getImageSize().getWidth())
-                                .mimetype(imageData.getMimeType())
-                                .extractionStatus(ExtractionStatus.PROCESSING_REQUESTED)
-                                .build()
+        NoteNode noteNode = nodeRequestBuilder.createNoteNode(
+                NoteNode.builder()
+                        .title("note with image")
+                        .listItemNode(
+                                ListItemNode.builder()
+                                        .text("some text")
+                                        .build()
+                        )
+                        .blobNodes(
+                                List.of(
+                                        BlobNode.builder()
+                                                .blob(
+                                                        ImageBlob.builder()
+                                                                .byteSize(imageData.getByteSize())
+                                                                .height(imageData.getImageSize().getHeight())
+                                                                .width(imageData.getImageSize().getWidth())
+                                                                .mimetype(imageData.getMimeType())
+                                                                .extractionStatus(ExtractionStatus.PROCESSING_REQUESTED)
+                                                                .build()
+                                                )
+                                                .build()
+                                )
                         )
                         .build()
-                )
-            )
-            .build()
-    );
+        );
 
-    List<Node> assembledNodeList = NodeUtils.getAssembledNodeList(gKeepAPI.changes(nodeRequestBuilder.build()).getNodes());
+        List<AbstractNode> assembledNodeList = NodeUtils.getAssembledNodeList(gKeepAPI.changes(nodeRequestBuilder.build()).getNodes());
 
-    assembledNodeList.forEach(n -> {
-        if (n.getType() == NodeType.NOTE) {
-            ((NoteNode) n).getBlobNodes().forEach(blob -> {
-                try {
-                    ImageBlob imageBlob 
-                            = gKeepAPI.uploadImage(imageData.getBytes(), blob.getServerId(), blob.getParentServerId());
-                } catch (AuthError e) {
-                    throw new RuntimeException(e);
-                }
-            });
-        }
-    });
-    
-    List<Node> nodes = NodeUtils.getAssembledNodeList(gKeepAPI.changes().getNodes());
-  }
+        assembledNodeList.forEach(n -> {
+            if (n.getType() == NodeType.NOTE) {
+                ((NoteNode) n).getBlobNodes().forEach(blob -> {
+                    try {
+                        ImageBlob imageBlob
+                                = gKeepAPI.uploadImage(imageData.getBytes(), blob.getServerId(), blob.getParentServerId());
+                    } catch (AuthError e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+            }
+        });
+
+        List<AbstractNode> nodes = NodeUtils.getAssembledNodeList(gKeepAPI.changes().getNodes());
+    }
 }
 ```
 
