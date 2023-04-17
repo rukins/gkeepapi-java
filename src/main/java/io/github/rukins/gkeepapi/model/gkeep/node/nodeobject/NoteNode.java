@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class NoteNode extends Node {
+public class NoteNode extends AbstractNode {
     private String title;
     private Boolean isArchived;
     private Boolean isPinned;

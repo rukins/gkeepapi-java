@@ -17,7 +17,7 @@ import java.util.Map;
 public class NodeRequestBuilder {
     private NodeRequestBuilder() {
     }
-    private final Map<String, Node> idAndNodeMap = new HashMap<>();
+    private final Map<String, AbstractNode> idAndNodeMap = new HashMap<>();
     private final Map<String, Label> idAndLabelMap = new HashMap<>();
 
     public static NodeRequestBuilder builder() {
@@ -168,19 +168,19 @@ public class NodeRequestBuilder {
         return (ListNode) mergeIfExistsOrPut(listNode);
     }
 
-    public Node trashNode(Node node) {
+    public AbstractNode trashNode(AbstractNode node) {
         node.getTimestamps().setTrashed(LocalDateTime.now(Timestamps.DEFAULT_ZONE_ID));
 
         return mergeIfExistsOrPut(node);
     }
 
-    public Node restoreNode(Node node) {
+    public AbstractNode restoreNode(AbstractNode node) {
         node.getTimestamps().setTrashed(Timestamps.DEFAULT_LOCALDATETIME);
 
         return mergeIfExistsOrPut(node);
     }
 
-    public Node deleteNode(Node node) {
+    public AbstractNode deleteNode(AbstractNode node) {
         node.getTimestamps().setDeleted(LocalDateTime.now(Timestamps.DEFAULT_ZONE_ID));
 
         return mergeIfExistsOrPut(node);
@@ -224,7 +224,7 @@ public class NodeRequestBuilder {
                 .build();
     }
 
-    public List<Node> getCurrentNodeList() {
+    public List<AbstractNode> getCurrentNodeList() {
         return idAndNodeMap.values().stream().toList();
     }
 
@@ -237,7 +237,7 @@ public class NodeRequestBuilder {
         idAndLabelMap.clear();
     }
 
-    private Node mergeIfExistsOrPut(Node node) {
+    private AbstractNode mergeIfExistsOrPut(AbstractNode node) {
         if (node == null) {
             return null;
         }

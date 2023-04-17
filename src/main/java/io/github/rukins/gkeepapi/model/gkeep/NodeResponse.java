@@ -1,6 +1,6 @@
 package io.github.rukins.gkeepapi.model.gkeep;
 
-import io.github.rukins.gkeepapi.model.gkeep.node.nodeobject.Node;
+import io.github.rukins.gkeepapi.model.gkeep.node.nodeobject.AbstractNode;
 import io.github.rukins.gkeepapi.model.gkeep.responseheader.ResponseHeader;
 import io.github.rukins.gkeepapi.model.gkeep.userinfo.UserInfo;
 
@@ -13,7 +13,7 @@ public class NodeResponse {
 
     private String toVersion;
 
-    private List<Node> nodes;
+    private List<AbstractNode> nodes;
 
     private Boolean truncated;
 
@@ -43,11 +43,11 @@ public class NodeResponse {
         this.toVersion = toVersion;
     }
 
-    public List<Node> getNodes() {
+    public List<AbstractNode> getNodes() {
         return nodes;
     }
 
-    public void setNodes(List<Node> nodes) {
+    public void setNodes(List<AbstractNode> nodes) {
         this.nodes = nodes;
     }
 

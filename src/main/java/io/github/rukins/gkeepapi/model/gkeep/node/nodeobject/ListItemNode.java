@@ -7,7 +7,7 @@ import io.github.rukins.gkeepapi.model.gkeep.nodesettings.NodeSettings;
 
 import java.util.Objects;
 
-public class ListItemNode extends Node {
+public class ListItemNode extends AbstractNode {
     private String text;
     private Boolean checked;
     private String baseVersion;

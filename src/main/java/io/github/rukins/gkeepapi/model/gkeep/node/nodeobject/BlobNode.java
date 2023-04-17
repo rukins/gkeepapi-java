@@ -8,7 +8,7 @@ import io.github.rukins.gkeepapi.model.gkeep.nodesettings.NodeSettings;
 
 import java.util.Objects;
 
-public class BlobNode extends Node {
+public class BlobNode extends AbstractNode {
     private Blob blob;
 
     private BlobNode() {

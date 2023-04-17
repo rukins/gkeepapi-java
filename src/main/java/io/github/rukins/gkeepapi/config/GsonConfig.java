@@ -8,7 +8,7 @@ import io.github.rukins.gkeepapi.annotation.Exclude;
 import io.github.rukins.gkeepapi.config.typeadapter.*;
 import io.github.rukins.gkeepapi.model.gkeep.node.blob.MimeType;
 import io.github.rukins.gkeepapi.model.gkeep.node.blob.blobobject.Blob;
-import io.github.rukins.gkeepapi.model.gkeep.node.nodeobject.Node;
+import io.github.rukins.gkeepapi.model.gkeep.node.nodeobject.AbstractNode;
 
 import java.time.LocalDateTime;
 import java.util.Locale;
@@ -31,7 +31,7 @@ public class GsonConfig {
                 .disableHtmlEscaping()
                 .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeTypeAdapter())
                 .registerTypeAdapter(Locale.class, new LocaleTypeAdapter())
-                .registerTypeAdapter(Node.class, new NodeTypeAdapter())
+                .registerTypeAdapter(AbstractNode.class, new NodeTypeAdapter())
                 .registerTypeAdapter(Blob.class, new BlobTypeAdapter())
                 .registerTypeAdapter(MimeType.class, new MimeTypeEnumTypeAdapter())
                 .create();

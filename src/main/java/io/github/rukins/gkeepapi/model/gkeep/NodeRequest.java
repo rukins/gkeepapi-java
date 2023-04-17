@@ -1,6 +1,6 @@
 package io.github.rukins.gkeepapi.model.gkeep;
 
-import io.github.rukins.gkeepapi.model.gkeep.node.nodeobject.Node;
+import io.github.rukins.gkeepapi.model.gkeep.node.nodeobject.AbstractNode;
 import io.github.rukins.gkeepapi.model.gkeep.requestheader.RequestHeader;
 import io.github.rukins.gkeepapi.model.gkeep.userinfo.UserInfo;
 
@@ -11,7 +11,7 @@ import java.util.List;
 public class NodeRequest {
     private LocalDateTime clientTimestamp;
 
-    private List<Node> nodes;
+    private List<AbstractNode> nodes;
 
     private RequestHeader requestHeader;
 
@@ -42,7 +42,7 @@ public class NodeRequest {
             return this;
         }
 
-        public Builder nodes(List<Node> nodes) {
+        public Builder nodes(List<AbstractNode> nodes) {
             nodeRequest.setNodes(nodes);
             return this;
         }
@@ -75,11 +75,11 @@ public class NodeRequest {
         this.clientTimestamp = clientTimestamp;
     }
 
-    public List<Node> getNodes() {
+    public List<AbstractNode> getNodes() {
         return nodes;
     }
 
-    public void setNodes(List<Node> nodes) {
+    public void setNodes(List<AbstractNode> nodes) {
         this.nodes = nodes;
     }
 

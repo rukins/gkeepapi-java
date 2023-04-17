@@ -5,7 +5,7 @@ import io.github.rukins.gkeepapi.exception.WrongBlobDataException;
 import io.github.rukins.gkeepapi.model.gkeep.NodeRequest;
 import io.github.rukins.gkeepapi.model.gkeep.NodeResponse;
 import io.github.rukins.gkeepapi.model.gkeep.node.blob.blobobject.ImageBlob;
-import io.github.rukins.gkeepapi.model.gkeep.node.nodeobject.Node;
+import io.github.rukins.gkeepapi.model.gkeep.node.nodeobject.AbstractNode;
 import io.github.rukins.gkeepapi.model.gkeep.userinfo.UserInfo;
 import io.github.rukins.gkeepapi.model.image.ImageData;
 import io.github.rukins.gkeepapi.utils.NodeUtils;
@@ -29,7 +29,7 @@ public class GKeepAPI {
     }
 
     public NodeResponse changes(NodeRequest nodeRequest) throws AuthError {
-        List<Node> nodes = new ArrayList<>();
+        List<AbstractNode> nodes = new ArrayList<>();
 
         nodeRequest.setTargetVersion(currentVersion);
         NodeResponse nodeResponse = client.changes(nodeRequest);

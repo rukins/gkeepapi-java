@@ -1,27 +1,28 @@
 package io.github.rukins.gkeepapi.utils;
 
 import io.github.rukins.gkeepapi.model.gkeep.NodeResponse;
+import io.github.rukins.gkeepapi.model.gkeep.Timestamps;
 import io.github.rukins.gkeepapi.model.gkeep.node.NodeType;
 import io.github.rukins.gkeepapi.model.gkeep.node.nodeobject.*;
 import io.github.rukins.gkeepapi.model.gkeep.userinfo.Label;
 import io.github.rukins.gkeepapi.model.gkeep.userinfo.UserInfo;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class NodeUtils {
-    public static List<Node> getAssembledNodeList(List<Node> allNodes) {
+    public static List<AbstractNode> getAssembledNodeList(List<AbstractNode> allNodes) {
         if (allNodes == null) {
             return null;
         }
 
-        List<Node> result = new ArrayList<>();
+        List<AbstractNode> result = new ArrayList<>();
 
-        Map<String, List<Node>> idAndNodeListMap = allNodes.stream().collect(
+        Map<String, List<AbstractNode>> idAndNodeListMap = allNodes.stream().collect(
                 Collectors.groupingBy(
                         n -> {
                             if (n.getType() == NodeType.NOTE || n.getType() == NodeType.LIST) {
@@ -33,8 +34,8 @@ public class NodeUtils {
                 )
         );
 
-        for (List<Node> nodeList : idAndNodeListMap.values()) {
-            Node noteOrList = nodeList.stream()
+        for (List<AbstractNode> nodeList : idAndNodeListMap.values()) {
+            AbstractNode noteOrList = nodeList.stream()
                     .filter(n -> n.getType() == NodeType.NOTE || n.getType() == NodeType.LIST)
                     .findFirst().orElse(null);
 
@@ -65,21 +66,21 @@ public class NodeUtils {
         return result;
     }
 
-    public static NoteNode getNoteNodeById(String noteNoteId, List<Node> allNodes) {
+    public static NoteNode getNoteNodeById(String noteNoteId, List<AbstractNode> allNodes) {
         return getNoteNodeById(noteNoteId, allNodes, true);
     }
 
-    public static NoteNode getNoteNodeById(String noteNoteId, List<Node> allNodes, boolean isNodeListAssembled) {
-        Node node;
+    public static NoteNode getNoteNodeById(String noteNoteId, List<AbstractNode> allNodes, boolean isNodeListAssembled) {
+        AbstractNode node;
 
         if (isNodeListAssembled) {
             node = allNodes.stream().filter(n -> noteNoteId.equals(n.getId())).findFirst().orElse(null);
 
             return node instanceof NoteNode ? (NoteNode) node : null;
         } else {
-            Map<NodeType, List<Node>> nodeTypeAndNodeMap = allNodes.stream()
+            Map<NodeType, List<AbstractNode>> nodeTypeAndNodeMap = allNodes.stream()
                     .filter(n -> noteNoteId.equals(n.getId()) || noteNoteId.equals(n.getParentId()))
-                    .collect(Collectors.groupingBy(Node::getType, Collectors.toList()));
+                    .collect(Collectors.groupingBy(AbstractNode::getType, Collectors.toList()));
 
             if (nodeTypeAndNodeMap.get(NodeType.NOTE) != null
                     && nodeTypeAndNodeMap.get(NodeType.NOTE).size() == 1) {
@@ -97,21 +98,21 @@ public class NodeUtils {
         return null;
     }
 
-    public static ListNode getListNodeById(String noteNoteId, List<Node> allNodes) {
+    public static ListNode getListNodeById(String noteNoteId, List<AbstractNode> allNodes) {
         return getListNodeById(noteNoteId, allNodes, true);
     }
 
-    public static ListNode getListNodeById(String listNodeId, List<Node> allNodes, boolean isNodeListAssembled) {
-        Node node;
+    public static ListNode getListNodeById(String listNodeId, List<AbstractNode> allNodes, boolean isNodeListAssembled) {
+        AbstractNode node;
 
         if (isNodeListAssembled) {
             node = allNodes.stream().filter(n -> listNodeId.equals(n.getId())).findFirst().orElse(null);
 
             return node instanceof ListNode ? (ListNode) node : null;
         } else {
-            Map<NodeType, List<Node>> nodeTypeAndNodeMap = allNodes.stream()
+            Map<NodeType, List<AbstractNode>> nodeTypeAndNodeMap = allNodes.stream()
                     .filter(n -> listNodeId.equals(n.getId()) || listNodeId.equals(n.getParentId()))
-                    .collect(Collectors.groupingBy(Node::getType, Collectors.toList()));
+                    .collect(Collectors.groupingBy(AbstractNode::getType, Collectors.toList()));
 
             if (nodeTypeAndNodeMap.get(NodeType.LIST) != null
                     && nodeTypeAndNodeMap.get(NodeType.LIST).size() == 1) {
@@ -152,21 +153,22 @@ public class NodeUtils {
         return oldVersion;
     }
 
-    public static List<Node> mergeNodes(List<? extends Node> oldNodes, List<? extends Node> newNodes) {
+    public static List<AbstractNode> mergeNodes(List<? extends AbstractNode> oldNodes, List<? extends AbstractNode> newNodes) {
         if (oldNodes == null || newNodes == null) {
             return null;
         }
 
-        Map<String, Node> idAndNodeMap = oldNodes.stream()
-                .collect(Collectors.toMap(Node::getId, n -> n));
+        Map<String, AbstractNode> idAndNodeMap = oldNodes.stream()
+                .collect(Collectors.toMap(AbstractNode::getId, n -> n));
 
-        for (Node newNode : newNodes) {
-            if (newNode.getTimestamps().getDeleted() != null) {
-                continue;
+        for (AbstractNode newNode : newNodes) {
+            if (newNode.getTimestamps().getDeleted() != null
+                    || newNode.getTimestamps().getDeleted().equals(Timestamps.DEFAULT_LOCALDATETIME)) {
+                idAndNodeMap.remove(newNode.getId());
             }
 
             if (idAndNodeMap.containsKey(newNode.getId())) {
-                Node oldNode = idAndNodeMap.get(newNode.getId());
+                AbstractNode oldNode = idAndNodeMap.get(newNode.getId());
 
                 if (!newNode.equals(oldNode)) {
                     idAndNodeMap.replace(newNode.getId(), NodeUtils.mergeNode(oldNode, newNode));
@@ -220,11 +222,18 @@ public class NodeUtils {
         return idAndLabelMap.values().stream().toList();
     }
 
-    public static Node mergeNode(Node oldNode, Node newNode) {
+    public static AbstractNode mergeNode(AbstractNode oldNode, AbstractNode newNode) {
         try {
-            Node mergedNode = (Node) mergeObjectByGettersAndSetters(oldNode, newNode);
+            if (oldNode instanceof NoteNode && newNode instanceof ListNode) {
+                oldNode = (AbstractNode) mergeObjects(ListNode.builder().build(), oldNode);
+            }
+            else if (oldNode instanceof ListNode && newNode instanceof NoteNode) {
+                oldNode = (AbstractNode) mergeObjects(NoteNode.builder().build(), oldNode);
+            }
 
-            if (mergedNode.getType() == NodeType.NOTE) {
+            AbstractNode mergedNode = (AbstractNode) mergeObjects(oldNode, newNode);
+
+            if (mergedNode instanceof NoteNode && oldNode instanceof NoteNode && newNode instanceof NoteNode) {
                 ((NoteNode) mergedNode).setBlobNodes(
                         mergeNodes(
                                 ((NoteNode) oldNode).getBlobNodes(),
@@ -238,7 +247,7 @@ public class NodeUtils {
                                 ((NoteNode) newNode).getLabelIds().stream()
                         ).distinct().toList()
                 );
-            } else if (mergedNode.getType() == NodeType.LIST) {
+            } else if (mergedNode instanceof ListNode && oldNode instanceof ListNode && newNode instanceof ListNode) {
                 ((ListNode) mergedNode).setListItemNodes(
                         mergeNodes(
                                 ((ListNode) oldNode).getListItemNodes(),
@@ -260,59 +269,72 @@ public class NodeUtils {
                 );
             }
 
+            if (mergedNode instanceof Node) {
+                try {
+                    Field typeField = mergedNode.getClass().getSuperclass().getDeclaredField("type");
+                    typeField.setAccessible(true);
+                    typeField.set(mergedNode, null);
+                } catch (NoSuchFieldException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
             return mergedNode;
-        } catch (InvocationTargetException | IllegalAccessException e) {
+        } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }
     }
 
     public static Label mergeLabel(Label oldLabel, Label newLabel) {
         try {
-            Label mergedLabel = (Label) mergeObjectByGettersAndSetters(oldLabel, newLabel);
+            Label mergedLabel = (Label) mergeObjects(oldLabel, newLabel);
 
             mergedLabel.setMergedIds(newLabel.getMergedIds());
 
             return mergedLabel;
-        } catch (InvocationTargetException | IllegalAccessException e) {
+        } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private static Object mergeObjectByGettersAndSetters(Object oldObj, Object newObj) throws InvocationTargetException, IllegalAccessException {
-        if (oldObj == null || newObj == null || !oldObj.getClass().equals(newObj.getClass())) {
+    private static Object mergeObjects(Object oldObj, Object newObj) throws IllegalAccessException {
+        if (oldObj == null || newObj == null) {
             return null;
         }
 
-        List<Method> getters = Arrays.stream(newObj.getClass().getMethods())
-                .filter(m -> m.getName().startsWith("get") && m.getParameterCount() == 0)
-                .toList();
+        List<Field> fieldsOfOldObj = new ArrayList<>();
+        List<Field> fieldsOfNewObj = new ArrayList<>();
 
-        for (Method getter : getters) {
-            Object returnedNewObj = getter.invoke(newObj);
+        if (oldObj.getClass().getSuperclass() == newObj.getClass().getSuperclass()
+                && oldObj.getClass().getSuperclass() != Object.class) {
+            fieldsOfOldObj.addAll(Arrays.stream(oldObj.getClass().getSuperclass().getDeclaredFields()).toList());
+            fieldsOfNewObj.addAll(Arrays.stream(newObj.getClass().getSuperclass().getDeclaredFields()).toList());
+        }
+
+        if (oldObj.getClass() == newObj.getClass()) {
+            fieldsOfOldObj.addAll(Arrays.stream(oldObj.getClass().getDeclaredFields()).toList());
+            fieldsOfNewObj.addAll(Arrays.stream(newObj.getClass().getDeclaredFields()).toList());
+        }
+
+        for (int i = 0; i < fieldsOfNewObj.size(); i++) {
+            fieldsOfNewObj.get(i).setAccessible(true);
+            Object returnedNewObj = fieldsOfNewObj.get(i).get(newObj);
 
             if (returnedNewObj != null) {
-                try {
-                    if (isBaseObject(returnedNewObj) || returnedNewObj.getClass().isEnum()) {
-                        oldObj.getClass().getMethod(
-                                "set" + getter.getName().substring(3),
-                                getter.getReturnType()
-                        ).invoke(oldObj, returnedNewObj);
-                    } else if (returnedNewObj instanceof Collection || returnedNewObj.getClass().isArray()) {
-                        // TODO
-                    } else {
-                        oldObj.getClass().getMethod(
-                                "set" + getter.getName().substring(3),
-                                getter.getReturnType()
-                        ).invoke(oldObj,
-                                mergeObjectByGettersAndSetters(
-                                        oldObj.getClass().getMethod(
-                                                "get" + getter.getName().substring(3)
-                                        ).invoke(oldObj),
-                                        returnedNewObj
-                                )
-                        );
-                    }
-                } catch (NoSuchMethodException ignored) {}
+                if (Modifier.isFinal(fieldsOfOldObj.get(i).getModifiers())
+                        || Modifier.isStatic(fieldsOfOldObj.get(i).getModifiers())) {
+                    continue;
+                }
+
+                fieldsOfOldObj.get(i).setAccessible(true);
+
+                if (isBaseObject(returnedNewObj) || returnedNewObj.getClass().isEnum()) {
+                    fieldsOfOldObj.get(i).set(oldObj, returnedNewObj);
+                } else if (returnedNewObj instanceof Collection || returnedNewObj.getClass().isArray()) {
+                    // TODO
+                } else {
+                    mergeObjects(fieldsOfOldObj.get(i).get(oldObj), returnedNewObj);
+                }
             }
         }
 
