@@ -163,7 +163,7 @@ public class NodeUtils {
 
         for (AbstractNode newNode : newNodes) {
             if (newNode.getTimestamps().getDeleted() != null
-                    || newNode.getTimestamps().getDeleted().equals(Timestamps.DEFAULT_LOCALDATETIME)) {
+                    && !newNode.getTimestamps().getDeleted().equals(Timestamps.DEFAULT_LOCALDATETIME)) {
                 idAndNodeMap.remove(newNode.getId());
             }
 
