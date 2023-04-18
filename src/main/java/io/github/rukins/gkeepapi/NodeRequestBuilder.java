@@ -243,7 +243,7 @@ public class NodeRequestBuilder {
         }
 
         if (idAndNodeMap.containsKey(node.getId())) {
-            idAndNodeMap.replace(node.getId(), NodeUtils.mergeNode(idAndNodeMap.get(node.getId()), node));
+            idAndNodeMap.replace(node.getId(), NodeUtils.mergeAbstractNodes(idAndNodeMap.get(node.getId()), node));
         } else {
             idAndNodeMap.put(node.getId(), node);
         }
@@ -257,7 +257,7 @@ public class NodeRequestBuilder {
         }
 
         if (idAndLabelMap.containsKey(label.getMainId())) {
-            idAndLabelMap.replace(label.getMainId(), NodeUtils.mergeLabel(idAndLabelMap.get(label.getMainId()), label));
+            idAndLabelMap.replace(label.getMainId(), NodeUtils.mergeLabels(idAndLabelMap.get(label.getMainId()), label));
         } else {
             idAndLabelMap.put(label.getMainId(), label);
         }

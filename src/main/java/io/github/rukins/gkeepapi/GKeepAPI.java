@@ -48,7 +48,7 @@ public class GKeepAPI {
             nodeResponse = client.changes(nodeRequest);
             currentVersion = nodeResponse.getToVersion();
 
-            NodeUtils.mergeUserInfo(userInfo, nodeResponse.getUserInfo());
+            NodeUtils.mergeUserInfos(userInfo, nodeResponse.getUserInfo());
         }
 
         if (nodeResponse.getNodes() != null) {

@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class NodeUtils {
-    public static List<AbstractNode> getAssembledNodeList(List<AbstractNode> allNodes) {
+    public static List<AbstractNode> getAssembledAbstractNodeList(List<AbstractNode> allNodes) {
         if (allNodes == null) {
             return null;
         }
@@ -132,7 +132,7 @@ public class NodeUtils {
         return null;
     }
 
-    public static NodeResponse mergeNodeResponse(NodeResponse oldVersion, NodeResponse newVersion) {
+    public static NodeResponse mergeNodeResponses(NodeResponse oldVersion, NodeResponse newVersion) {
         if (oldVersion == null || newVersion == null) {
             return null;
         }
@@ -144,16 +144,16 @@ public class NodeUtils {
         oldVersion.setResponseHeader(newVersion.getResponseHeader());
 
         if (newVersion.getNodes() != null) {
-            oldVersion.setNodes(mergeNodes(oldVersion.getNodes(), newVersion.getNodes()));
+            oldVersion.setNodes(mergeListsOfAbstractNodes(oldVersion.getNodes(), newVersion.getNodes()));
         }
         if (newVersion.getUserInfo() != null) {
-            oldVersion.setUserInfo(mergeUserInfo(oldVersion.getUserInfo(), newVersion.getUserInfo()));
+            oldVersion.setUserInfo(mergeUserInfos(oldVersion.getUserInfo(), newVersion.getUserInfo()));
         }
 
         return oldVersion;
     }
 
-    public static List<AbstractNode> mergeNodes(List<? extends AbstractNode> oldNodes, List<? extends AbstractNode> newNodes) {
+    public static List<AbstractNode> mergeListsOfAbstractNodes(List<? extends AbstractNode> oldNodes, List<? extends AbstractNode> newNodes) {
         if (oldNodes == null || newNodes == null) {
             return null;
         }
@@ -171,7 +171,7 @@ public class NodeUtils {
                 AbstractNode oldNode = idAndNodeMap.get(newNode.getId());
 
                 if (!newNode.equals(oldNode)) {
-                    idAndNodeMap.replace(newNode.getId(), NodeUtils.mergeNode(oldNode, newNode));
+                    idAndNodeMap.replace(newNode.getId(), NodeUtils.mergeAbstractNodes(oldNode, newNode));
                 }
             } else {
                 idAndNodeMap.put(newNode.getId(), newNode);
@@ -181,7 +181,7 @@ public class NodeUtils {
         return idAndNodeMap.values().stream().toList();
     }
 
-    public static UserInfo mergeUserInfo(UserInfo oldUserInfo, UserInfo newUserInfo) {
+    public static UserInfo mergeUserInfos(UserInfo oldUserInfo, UserInfo newUserInfo) {
         if (oldUserInfo == null || newUserInfo == null) {
             return oldUserInfo;
         }
@@ -193,13 +193,13 @@ public class NodeUtils {
             oldUserInfo.setSettings(newUserInfo.getSettings());
         }
         if (newUserInfo.getLabels() != null) {
-            oldUserInfo.setLabels(mergeLabels(oldUserInfo.getLabels(), newUserInfo.getLabels()));
+            oldUserInfo.setLabels(mergeListsOfLabels(oldUserInfo.getLabels(), newUserInfo.getLabels()));
         }
 
         return oldUserInfo;
     }
 
-    public static List<Label> mergeLabels(List<Label> oldLabels, List<Label> newLabels) {
+    public static List<Label> mergeListsOfLabels(List<Label> oldLabels, List<Label> newLabels) {
         if (oldLabels == null || newLabels == null) {
             return null;
         }
@@ -222,7 +222,7 @@ public class NodeUtils {
         return idAndLabelMap.values().stream().toList();
     }
 
-    public static AbstractNode mergeNode(AbstractNode oldNode, AbstractNode newNode) {
+    public static AbstractNode mergeAbstractNodes(AbstractNode oldNode, AbstractNode newNode) {
         try {
             if (oldNode instanceof NoteNode && newNode instanceof ListNode) {
                 oldNode = (AbstractNode) mergeObjects(ListNode.builder().build(), oldNode);
@@ -235,7 +235,7 @@ public class NodeUtils {
 
             if (mergedNode instanceof NoteNode && oldNode instanceof NoteNode && newNode instanceof NoteNode) {
                 ((NoteNode) mergedNode).setBlobNodes(
-                        mergeNodes(
+                        mergeListsOfAbstractNodes(
                                 ((NoteNode) oldNode).getBlobNodes(),
                                 ((NoteNode) newNode).getBlobNodes()
                         ).stream().map(n -> (BlobNode) n).toList()
@@ -249,13 +249,13 @@ public class NodeUtils {
                 );
             } else if (mergedNode instanceof ListNode && oldNode instanceof ListNode && newNode instanceof ListNode) {
                 ((ListNode) mergedNode).setListItemNodes(
-                        mergeNodes(
+                        mergeListsOfAbstractNodes(
                                 ((ListNode) oldNode).getListItemNodes(),
                                 ((ListNode) newNode).getListItemNodes()
                         ).stream().map(n -> (ListItemNode) n).toList()
                 );
                 ((ListNode) mergedNode).setBlobNodes(
-                        mergeNodes(
+                        mergeListsOfAbstractNodes(
                                 ((ListNode) oldNode).getBlobNodes(),
                                 ((ListNode) newNode).getBlobNodes()
                         ).stream().map(n -> (BlobNode) n).toList()
@@ -285,7 +285,7 @@ public class NodeUtils {
         }
     }
 
-    public static Label mergeLabel(Label oldLabel, Label newLabel) {
+    public static Label mergeLabels(Label oldLabel, Label newLabel) {
         try {
             Label mergedLabel = (Label) mergeObjects(oldLabel, newLabel);
 
