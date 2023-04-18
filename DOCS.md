@@ -420,7 +420,7 @@ public class Main {
                         .build()
         );
 
-        List<AbstractNode> assembledNodeList = NodeUtils.getAssembledNodeList(gKeepAPI.changes(nodeRequestBuilder.build()).getNodes());
+        List<AbstractNode> assembledNodeList = NodeUtils.getAssembledAbstractNodeList(gKeepAPI.changes(nodeRequestBuilder.build()).getNodes());
 
         assembledNodeList.forEach(n -> {
             if (n.getType() == NodeType.NOTE) {
@@ -435,7 +435,7 @@ public class Main {
             }
         });
 
-        List<AbstractNode> nodes = NodeUtils.getAssembledNodeList(gKeepAPI.changes().getNodes());
+        List<AbstractNode> nodes = NodeUtils.getAssembledAbstractNodeList(gKeepAPI.changes().getNodes());
     }
 }
 ```
