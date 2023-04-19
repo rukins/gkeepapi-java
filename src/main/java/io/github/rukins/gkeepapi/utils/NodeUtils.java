@@ -71,6 +71,38 @@ public class NodeUtils {
         return result;
     }
 
+    public static List<AbstractNode> getAbstractNodeListFromAssembled(List<AbstractNode> assembledList) {
+        List<AbstractNode> result = new ArrayList<>();
+
+        for (AbstractNode node : assembledList) {
+            if (node.getType() == NodeType.NOTE) {
+                NoteNode noteNode = (NoteNode) node;
+
+                result.add(noteNode.getListItemNode());
+                result.addAll(noteNode.getBlobNodes());
+
+                noteNode.setListItemNode(null);
+                noteNode.getBlobNodes().clear();
+
+                result.add(noteNode);
+            } else if (node.getType() == NodeType.LIST) {
+                ListNode listNode = (ListNode) node;
+
+                result.addAll(listNode.getListItemNodes());
+                result.addAll(listNode.getBlobNodes());
+
+                listNode.getListItemNodes().clear();
+                listNode.getBlobNodes().clear();
+
+                result.add(listNode);
+            } else {
+                result.add(node);
+            }
+        }
+
+        return result;
+    }
+
     public static NoteNode getNoteNodeById(String noteNoteId, List<AbstractNode> allNodes) {
         return getNoteNodeById(noteNoteId, allNodes, true);
     }
