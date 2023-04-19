@@ -25,16 +25,21 @@ public class NodeUtils {
         Map<String, List<AbstractNode>> idAndNodeListMap = allNodes.stream().collect(
                 Collectors.groupingBy(
                         n -> {
-                            if (n.getType() == NodeType.NOTE || n.getType() == NodeType.LIST) {
-                                return n.getId();
+                            if (n.getType() == NodeType.LIST_ITEM || n.getType() == NodeType.BLOB) {
+                                return n.getParentId();
                             }
-                            return n.getParentId();
+                            return n.getId();
                         },
                         Collectors.toList()
                 )
         );
 
         for (List<AbstractNode> nodeList : idAndNodeListMap.values()) {
+            if (nodeList.stream().allMatch(n -> n.getType() == null)) {
+                result.addAll(nodeList);
+                continue;
+            }
+
             AbstractNode noteOrList = nodeList.stream()
                     .filter(n -> n.getType() == NodeType.NOTE || n.getType() == NodeType.LIST)
                     .findFirst().orElse(null);
@@ -165,6 +170,7 @@ public class NodeUtils {
             if (newNode.getTimestamps().getDeleted() != null
                     && !newNode.getTimestamps().getDeleted().equals(Timestamps.DEFAULT_LOCALDATETIME)) {
                 idAndNodeMap.remove(newNode.getId());
+                continue;
             }
 
             if (idAndNodeMap.containsKey(newNode.getId())) {
