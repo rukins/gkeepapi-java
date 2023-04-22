@@ -25,9 +25,7 @@ public class NodeRequestBuilder {
     }
 
     public NoteNode createNoteNode(NoteNode noteNode) {
-        String noteId = IdUtils.generateId();
-
-        noteNode.setId(noteId);
+        noteNode.setId(IdUtils.generateId());
 
         if (noteNode.getListItemNode() == null) {
             noteNode.setListItemNode(
@@ -37,7 +35,7 @@ public class NodeRequestBuilder {
             );
         }
         noteNode.getListItemNode().setId(IdUtils.generateId());
-        noteNode.getListItemNode().setParentId(noteId);
+        noteNode.getListItemNode().setParentId(noteNode.getId());
 
         noteNode.setListItemNode((ListItemNode) mergeIfExistsOrPut(noteNode.getListItemNode()));
 
@@ -53,14 +51,23 @@ public class NodeRequestBuilder {
     }
 
     public NoteNode createOrUpdateNoteNode(NoteNode noteNode) {
-        mergeIfExistsOrPut(noteNode);
+        if (noteNode.getId() == null)
+            noteNode.setId(IdUtils.generateId());
 
-        noteNode.getListItemNode().setParentId(noteNode.getId());
-        noteNode.setListItemNode((ListItemNode) mergeIfExistsOrPut(noteNode.getListItemNode()));
+        if (noteNode.getListItemNode() != null) {
+            if (noteNode.getListItemNode().getId() == null)
+                noteNode.getListItemNode().setId(IdUtils.generateId());
+            noteNode.getListItemNode().setParentId(noteNode.getId());
+
+            noteNode.setListItemNode((ListItemNode) mergeIfExistsOrPut(noteNode.getListItemNode()));
+        }
 
         noteNode.setBlobNodes(
                 noteNode.getBlobNodes().stream().map(n -> {
+                    if (n.getId() == null)
+                        n.setId(IdUtils.generateId());
                     n.setParentId(noteNode.getId());
+
                     return (BlobNode) mergeIfExistsOrPut(n);
                 }).toList()
         );
@@ -99,9 +106,7 @@ public class NodeRequestBuilder {
     }
 
     public ListNode createListNode(ListNode listNode) {
-        String listId = IdUtils.generateId();
-
-        listNode.setId(listId);
+        listNode.setId(IdUtils.generateId());
 
         listNode.setListItemNodes(
                 listNode.getListItemNodes().stream().map(n -> {
@@ -122,15 +127,24 @@ public class NodeRequestBuilder {
     }
 
     public ListNode createOrUpdateListNode(ListNode listNode) {
+        if (listNode.getId() == null)
+            listNode.setId(IdUtils.generateId());
+
         listNode.setListItemNodes(
                 listNode.getListItemNodes().stream().map(n -> {
+                    if (n.getId() == null)
+                        n.setId(IdUtils.generateId());
                     n.setParentId(listNode.getId());
+
                     return (ListItemNode) mergeIfExistsOrPut(n);
                 }).toList()
         );
         listNode.setBlobNodes(
                 listNode.getBlobNodes().stream().map(n -> {
+                    if (n.getId() == null)
+                        n.setId(IdUtils.generateId());
                     n.setParentId(listNode.getId());
+
                     return (BlobNode) mergeIfExistsOrPut(n);
                 }).toList()
         );
