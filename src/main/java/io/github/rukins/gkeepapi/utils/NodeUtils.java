@@ -189,8 +189,18 @@ public class NodeUtils {
 
         return oldVersion;
     }
+    public static List<AbstractNode> mergeListsOfAbstractNodes(
+            List<? extends AbstractNode> oldNodes,
+            List<? extends AbstractNode> newNodes
+    ) {
+        return mergeListsOfAbstractNodes(oldNodes, newNodes, false);
+    }
 
-    public static List<AbstractNode> mergeListsOfAbstractNodes(List<? extends AbstractNode> oldNodes, List<? extends AbstractNode> newNodes) {
+    public static List<AbstractNode> mergeListsOfAbstractNodes(
+            List<? extends AbstractNode> oldNodes,
+            List<? extends AbstractNode> newNodes,
+            Boolean excludeDeleted
+    ) {
         if (oldNodes == null || newNodes == null) {
             return null;
         }
@@ -199,7 +209,7 @@ public class NodeUtils {
                 .collect(Collectors.toMap(AbstractNode::getId, n -> n));
 
         for (AbstractNode newNode : newNodes) {
-            if (newNode.getTimestamps().getDeleted() != null
+            if (excludeDeleted && newNode.getTimestamps().getDeleted() != null
                     && !newNode.getTimestamps().getDeleted().equals(Timestamps.DEFAULT_LOCALDATETIME)) {
                 idAndNodeMap.remove(newNode.getId());
                 continue;
@@ -209,7 +219,7 @@ public class NodeUtils {
                 AbstractNode oldNode = idAndNodeMap.get(newNode.getId());
 
                 if (!newNode.equals(oldNode)) {
-                    idAndNodeMap.replace(newNode.getId(), NodeUtils.mergeAbstractNodes(oldNode, newNode));
+                    idAndNodeMap.replace(newNode.getId(), mergeAbstractNodes(oldNode, newNode));
                 }
             } else {
                 idAndNodeMap.put(newNode.getId(), newNode);
@@ -250,7 +260,7 @@ public class NodeUtils {
                 Label oldLabel = idAndLabelMap.get(newLabel.getMainId());
 
                 if (!newLabel.equals(oldLabel)) {
-                    idAndLabelMap.replace(newLabel.getMainId(), newLabel);
+                    idAndLabelMap.replace(newLabel.getMainId(), mergeLabels(oldLabel, newLabel));
                 }
             } else {
                 idAndLabelMap.put(newLabel.getMainId(), newLabel);
