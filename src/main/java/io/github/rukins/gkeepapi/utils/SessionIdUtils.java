@@ -27,6 +27,12 @@ public class SessionIdUtils {
             throw new RuntimeException(e);
         }
 
+        if (macAddress == null) {
+            // some environments, like Android emulators, may not provide MAC address
+            // in this case, we just generate a random UUID
+            return generateSessionId();
+        }
+
         String sessionId = UUID.nameUUIDFromBytes(macAddress).toString();
 
         return sessionId != null ? sessionId : generateSessionId();
