@@ -18,11 +18,13 @@ public class SessionIdUtils {
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
         }
-        byte[] macAddress;
+        byte[] macAddress = null;
         try {
             NetworkInterface ni = NetworkInterface.getByInetAddress(localIP);
 
-            macAddress = ni.getHardwareAddress();
+            if (ni != null) {
+                macAddress = ni.getHardwareAddress();
+            }
         } catch (SocketException e) {
             throw new RuntimeException(e);
         }
