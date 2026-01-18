@@ -1,14 +1,6 @@
 package io.github.rukins.gkeepapi.client;
 
 import com.google.gson.Gson;
-import feign.Feign;
-import feign.FeignException;
-import feign.RequestTemplate;
-import feign.Response;
-import feign.codec.EncodeException;
-import feign.codec.Encoder;
-import feign.gson.GsonDecoder;
-import feign.gson.GsonEncoder;
 import io.github.rukins.gkeepapi.config.GsonConfig;
 import io.github.rukins.gkeepapi.exception.WrongBlobDataException;
 import io.github.rukins.gkeepapi.model.gkeep.NodeRequest;
@@ -19,10 +11,14 @@ import io.github.rukins.gkeepapi.model.image.ImageData;
 import io.github.rukins.gpsoauth.Auth;
 import io.github.rukins.gpsoauth.exception.AuthError;
 import io.github.rukins.gpsoauth.model.AccessTokenRequestParams;
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 import java.io.IOException;
-import java.lang.reflect.Type;
-import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Collection;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -31,18 +27,9 @@ import java.util.regex.Pattern;
 public class GKeepClientWrapper {
     private final Gson gson = GsonConfig.gson();
 
-    private final GKeepClient client = Feign.builder()
-            .decoder(new GsonDecoder(gson))
-            .encoder(new GsonEncoder(gson))
-            .target(GKeepClient.class, GKeepClient.URL);
-
-    private final GKeepUploadMediaClient uploadMediaClient = Feign.builder()
-            .decoder(new GsonDecoder(gson))
-            .encoder(new FileEncoder())
-            .target(GKeepUploadMediaClient.class, GKeepUploadMediaClient.URL);
-
-    private final GKeepMediaClient mediaClient = Feign.builder()
-            .target(GKeepMediaClient.class, GKeepMediaClient.URL);
+    private final GKeepClient client;
+    private final GKeepUploadMediaClient uploadMediaClient;
+    private final GKeepMediaClient mediaClient;
 
     private final Auth auth = new Auth();
 
@@ -52,17 +39,60 @@ public class GKeepClientWrapper {
 
     public GKeepClientWrapper(String masterToken) {
         this.masterToken = masterToken;
+
+        Retrofit retrofitGKeep = new Retrofit.Builder()
+                .baseUrl(GKeepClient.URL)
+                .addConverterFactory(GsonConverterFactory.create(gson))
+                .build();
+        this.client = retrofitGKeep.create(GKeepClient.class);
+
+        Retrofit retrofitUpload = new Retrofit.Builder()
+                .baseUrl(GKeepUploadMediaClient.URL)
+                .addConverterFactory(GsonConverterFactory.create(gson))
+                .build();
+        this.uploadMediaClient = retrofitUpload.create(GKeepUploadMediaClient.class);
+
+        Retrofit retrofitMedia = new Retrofit.Builder()
+                .baseUrl(GKeepMediaClient.URL)
+                .build();
+        this.mediaClient = retrofitMedia.create(GKeepMediaClient.class);
     }
 
     public NodeResponse changes(NodeRequest body) throws AuthError {
         NodeResponse nodeResponse;
 
         try {
-            nodeResponse = client.changes(body, accessToken);
-        } catch (FeignException.Unauthorized unauthorized) {
+            String authHeader = "OAuth " + accessToken;
+            Call<NodeResponse> call = client.changes(
+                    body,
+                    authHeader
+            );
+            Response<NodeResponse> response = call.execute();
+
+            if (response.code() == 401) {
+                throw new HttpUnauthorizedException("Unauthorized");
+            }
+
+            if (!response.isSuccessful()) {
+                throw new RuntimeException("Request failed: " + response.code());
+            }
+
+            nodeResponse = response.body();
+        } catch (HttpUnauthorizedException unauthorized) {
             updateAccessToken();
 
-            nodeResponse = client.changes(body, accessToken);
+            String authHeader = "OAuth " + accessToken;
+            Call<NodeResponse> call = client.changes(
+                    body,
+                    authHeader
+            );
+            try {
+                nodeResponse = call.execute().body();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
 
         return nodeResponse;
@@ -71,36 +101,59 @@ public class GKeepClientWrapper {
     public String getUploadId(String blobServerId, String nodeServerId) throws AuthError {
         final String UPLOAD_ID_HEADER = "X-GUploader-UploadID";
 
-        Map<String, Collection<String>> headers;
+        Map<String, List<String>> headers;
 
-        try (Response response = uploadMediaClient.uploadMedia(blobServerId, nodeServerId, accessToken)) {
-            if (response.status() == 401) {
-                throw new FeignException.Unauthorized(
-                        response.reason(), response.request(),
-                        response.body().asInputStream().readAllBytes(), response.headers()
-                );
+        try {
+            String authHeader = "OAuth " + accessToken;
+            Call<ResponseBody> call = uploadMediaClient.uploadMedia(
+                    blobServerId,
+                    nodeServerId,
+                    authHeader
+            );
+            Response<ResponseBody> response = call.execute();
+
+            if (response.code() == 401) {
+                throw new HttpUnauthorizedException("Unauthorized");
             }
 
-            headers = response.headers();
-        } catch (FeignException.Unauthorized unauthorized) {
+            headers = response.headers().toMultimap();
+        } catch (HttpUnauthorizedException unauthorized) {
             updateAccessToken();
 
-            Response response = uploadMediaClient.uploadMedia(blobServerId, nodeServerId, accessToken);
-
-            headers = response.headers();
-
-            response.close();
+            String authHeader = "OAuth " + accessToken;
+            Call<ResponseBody> call = uploadMediaClient.uploadMedia(
+                    blobServerId,
+                    nodeServerId,
+                    authHeader
+            );
+            try {
+                Response<ResponseBody> response = call.execute();
+                headers = response.headers().toMultimap();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
         return headers.containsKey(UPLOAD_ID_HEADER)
-                ? (String) headers.get(UPLOAD_ID_HEADER).toArray()[0]
+                ? headers.get(UPLOAD_ID_HEADER).get(0)
                 : null;
     }
 
     public ImageBlob uploadImage(byte[] imageBytes, String blobServerId, String nodeServerId, String uploadId) {
-        return uploadMediaClient.uploadMedia(imageBytes, blobServerId, nodeServerId, uploadId);
+        try {
+            Call<ImageBlob> call = uploadMediaClient.uploadMedia(
+                    imageBytes,
+                    blobServerId,
+                    nodeServerId,
+                    uploadId
+            );
+            Response<ImageBlob> response = call.execute();
+            return response.body();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public ImageData getImageData(String blobServerId, String nodeServerId) throws AuthError, WrongBlobDataException {
@@ -108,33 +161,55 @@ public class GKeepClientWrapper {
         final String CONTENT_DISPOSITION_HEADER = "Content-Disposition";
 
         byte[] imageBytes;
-        Map<String, Collection<String>> headers;
+        Map<String, List<String>> headers;
 
-        try(Response response = mediaClient.media(blobServerId, nodeServerId, accessToken)) {
-            if (response.status() == 401) {
-                throw new FeignException.Unauthorized(
-                        response.reason(), response.request(),
-                        response.body().asInputStream().readAllBytes(), response.headers()
-                );
+        try {
+            String authHeader = "OAuth " + accessToken;
+            Call<ResponseBody> call = mediaClient.media(
+                    blobServerId,
+                    nodeServerId,
+                    authHeader
+            );
+            Response<ResponseBody> response = call.execute();
+
+            if (response.code() == 401) {
+                throw new HttpUnauthorizedException("Unauthorized");
             }
-            checkIfWrongBlobData(response);
 
-            imageBytes = response.body().asInputStream().readAllBytes();
-            headers = response.headers();
-        } catch (FeignException.Unauthorized unauthorized) {
+            if (response.isSuccessful()) {
+                checkIfWrongBlobData(response.code());
+
+                try {
+                    imageBytes = response.body().bytes();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                headers = response.headers().toMultimap();
+            } else {
+                throw new RuntimeException("Request failed: " + response.code());
+            }
+        } catch (HttpUnauthorizedException unauthorized) {
             updateAccessToken();
 
-            Response response = mediaClient.media(blobServerId, nodeServerId, accessToken);
-            checkIfWrongBlobData(response);
-
+            String authHeader = "OAuth " + accessToken;
+            Call<ResponseBody> call = mediaClient.media(
+                    blobServerId,
+                    nodeServerId,
+                    authHeader
+            );
             try {
-                imageBytes = response.body().asInputStream().readAllBytes();
+                Response<ResponseBody> response = call.execute();
+                checkIfWrongBlobData(response.code());
+
+                try {
+                    imageBytes = response.body().bytes();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                headers = response.headers().toMultimap();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            headers = response.headers();
-
-            response.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -143,9 +218,9 @@ public class GKeepClientWrapper {
                 ? new ImageData(
                         imageBytes,
                         getFileNameFromContentDispositionHeader(
-                                ((String) headers.get(CONTENT_DISPOSITION_HEADER).toArray()[0])
+                                headers.get(CONTENT_DISPOSITION_HEADER).get(0)
                         ),
-                        MimeType.getByValue((String) headers.get(CONTENT_TYPE_HEADER).toArray()[0])
+                        MimeType.getByValue(headers.get(CONTENT_TYPE_HEADER).get(0))
                 )
                 : null;
     }
@@ -173,20 +248,18 @@ public class GKeepClientWrapper {
         return null;
     }
 
-    private void checkIfWrongBlobData(Response response) throws WrongBlobDataException {
-        if (response.status() == 400) {
+    private void checkIfWrongBlobData(int statusCode) throws WrongBlobDataException {
+        if (statusCode == 400) {
             throw new WrongBlobDataException("Wrong blob server id");
         }
-        else if (response.status() == 403) {
+        else if (statusCode == 403) {
             throw new WrongBlobDataException("Wrong node server id");
         }
     }
 
-    private static class FileEncoder implements Encoder {
-        public void encode(Object object, Type bodyType, RequestTemplate template) throws EncodeException {
-            if (object instanceof Map && ((Map<?, ?>) object).containsKey("file")) {
-                template.body((byte[]) ((Map<?, ?>) object).get("file"), StandardCharsets.UTF_8);
-            }
+    private static class HttpUnauthorizedException extends Exception {
+        public HttpUnauthorizedException(String message) {
+            super(message);
         }
     }
 }

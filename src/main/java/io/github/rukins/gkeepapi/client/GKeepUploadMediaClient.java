@@ -1,35 +1,39 @@
 package io.github.rukins.gkeepapi.client;
 
-import feign.Headers;
-import feign.Param;
-import feign.RequestLine;
-import feign.Response;
 import io.github.rukins.gkeepapi.model.gkeep.node.blob.blobobject.ImageBlob;
+import retrofit2.Call;
+import retrofit2.http.Body;
+import retrofit2.http.Header;
+import retrofit2.http.Headers;
+import retrofit2.http.POST;
+import retrofit2.http.PUT;
+import retrofit2.http.Path;
+import retrofit2.http.Query;
+import retrofit2.Response;
 
 public interface GKeepUploadMediaClient {
     String URL = "https://notes-pa.googleapis.com";
 
-    @RequestLine("POST /upload/notes/v1/media/{blob-serverId}?noteId={node-serverId}&uploadType=resumable")
+    @POST("/upload/notes/v1/media/{blob-serverId}?uploadType=resumable")
     @Headers({
             "Connection: Keep-Alive",
-            "Authorization: OAuth {access-token}",
             "User-Agent: x-gkeepapi (https://github.com/rukins/gkeepapi-java)"
     })
-    Response uploadMedia(
-            @Param("blob-serverId") String blobServerId,
-            @Param("node-serverId") String nodeServerId,
-            @Param("access-token") String accessToken
+    Call<okhttp3.ResponseBody> uploadMedia(
+            @Path("blob-serverId") String blobServerId,
+            @Query("noteId") String nodeServerId,
+            @Header("Authorization") String authorization
     );
 
-    @RequestLine("PUT /upload/notes/v1/media/{blob-serverId}?noteId={node-serverId}&uploadType=resumable&upload_id={upload_id}")
+    @PUT("/upload/notes/v1/media/{blob-serverId}?uploadType=resumable")
     @Headers({
             "Connection: Keep-Alive",
             "User-Agent: x-gkeepapi (https://github.com/rukins/gkeepapi-java)"
     })
-    ImageBlob uploadMedia(
-            @Param("file") byte[] imageBytes,
-            @Param("blob-serverId") String blobServerId,
-            @Param("node-serverId") String nodeServerId,
-            @Param("upload_id") String uploadId
+    Call<ImageBlob> uploadMedia(
+            @Body byte[] imageBytes,
+            @Path("blob-serverId") String blobServerId,
+            @Query("noteId") String nodeServerId,
+            @Query("upload_id") String uploadId
     );
 }
